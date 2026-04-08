@@ -1,0 +1,1425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JIER North America - Service Management System</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Arial,sans-serif;background:#f0f4f8;color:#1e293b;min-height:100vh;display:flex;flex-direction:column}
+/* NAV */
+nav{background:linear-gradient(90deg,#15325a 0%,#1F3864 55%,#214573 100%);color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 28px;height:78px;flex-shrink:0;box-shadow:0 10px 24px rgba(15,23,42,.12);border-bottom:3px solid #7eb8f7}
+.logo-wrap{display:flex;align-items:center;gap:16px;min-width:0}
+.brand-mark{height:42px;width:auto;display:block;object-fit:contain;filter:drop-shadow(0 2px 4px rgba(0,0,0,.15))}
+.logo{display:flex;flex-direction:column;justify-content:center;min-width:0}
+.logo .brand-title{font-size:20px;font-weight:700;letter-spacing:.02em;line-height:1.05;white-space:nowrap}
+.logo .brand-subtitle{color:#dbeafe;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;margin-top:4px}
+.logo .brand-tagline{color:#93c5fd;font-size:11px;font-weight:500;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:420px}
+.nav-tabs{display:flex;gap:0;align-self:stretch}
+.nav-tab{padding:0 18px;height:78px;display:flex;align-items:center;font-size:13px;cursor:pointer;border-bottom:3px solid transparent;color:rgba(255,255,255,.72);transition:all .15s;font-weight:600;letter-spacing:.02em}
+.nav-tab:hover{color:#fff;background:rgba(255,255,255,.08)}
+.nav-tab.active{color:#fff;border-bottom-color:#7eb8f7}
+.nav-right{display:flex;gap:8px;align-items:center}
+/* PAGES */
+.page{display:none;padding:24px 20px;max-width:1400px;margin:0 auto;width:100%}
+.page.active{display:block}
+/* DASHBOARD TABS */
+.dash-tabs{display:flex;gap:0;margin-bottom:20px;border-bottom:2px solid #e2e8f0}
+.dash-tab{padding:10px 22px;font-size:13px;font-weight:700;cursor:pointer;color:#64748b;border-bottom:3px solid transparent;margin-bottom:-2px;transition:all .15s;letter-spacing:.02em}
+.dash-tab:hover{color:#1F3864}
+.dash-tab.active{color:#1F3864;border-bottom-color:#1F3864}
+.dash-tab.parts-tab.active{color:#0f766e;border-bottom-color:#0f766e}
+.dash-panel{display:none}.dash-panel.active{display:block}
+/* SECTION HEADER COLORS */
+.section-label-svc{display:inline-block;background:#dbeafe;color:#1e40af;border-radius:6px;padding:3px 10px;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:14px}
+.section-label-parts{display:inline-block;background:#ccfbf1;color:#0f766e;border-radius:6px;padding:3px 10px;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:14px}
+/* KPI */
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
+.kpi{background:#fff;border-radius:10px;padding:18px 20px;border:1px solid #e2e8f0}
+.kpi .n{font-size:32px;font-weight:700;color:#1F3864}
+.kpi .l{font-size:12px;color:#64748b;margin-top:3px}
+.kpi .sub{font-size:12px;margin-top:6px;font-weight:600}
+.kpi.k2 .n{color:#2563eb}.kpi.k3 .n{color:#d97706}.kpi.k4 .n{color:#16a34a}
+.kpi.kp1 .n{color:#0f766e}.kpi.kp2 .n{color:#0891b2}.kpi.kp3 .n{color:#d97706}.kpi.kp4 .n{color:#16a34a}
+/* CHARTS */
+.charts-row{display:block;margin-bottom:20px}
+.simple-grid{display:grid;grid-template-columns:1.35fr 1fr;gap:14px;margin-bottom:20px}
+.simple-stack{display:flex;flex-direction:column;gap:14px}
+.simple-card{background:#fff;border-radius:10px;border:1px solid #e2e8f0;padding:16px}
+.simple-card h3{font-size:13px;font-weight:700;color:#475569;margin-bottom:12px;text-transform:uppercase;letter-spacing:.05em}
+.simple-note{font-size:12px;color:#64748b;margin-top:10px}
+.summary-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.summary-mini{background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:12px}
+.summary-mini .label{font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:.05em}
+.summary-mini .value{font-size:22px;font-weight:700;color:#1F3864;margin-top:6px}
+.summary-mini .sub{font-size:12px;color:#475569;margin-top:6px;line-height:1.4}
+.compact-list{display:flex;flex-direction:column;gap:10px}
+.compact-row{display:grid;grid-template-columns:140px 1fr 34px;gap:10px;align-items:center;font-size:12px}
+.compact-row .bar-track{height:14px}
+.compact-row .bar-count{width:auto;text-align:right;font-weight:700;color:#475569}
+.bar-label{width:140px;flex-shrink:0;color:#334155;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bar-track{flex:1;background:#f1f5f9;border-radius:4px;height:18px;overflow:hidden}
+.bar-fill{height:100%;border-radius:4px;transition:width .4s}
+.bar-count{width:28px;text-align:right;color:#64748b;font-size:12px;flex-shrink:0}
+.agent-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px}
+.agent-card{border:1px solid #e2e8f0;border-radius:8px;padding:12px;text-align:center;background:#fff}
+.avatar{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;margin:0 auto 8px}
+.agent-card .an{font-size:13px;font-weight:600;color:#1e293b}
+.agent-card .ac{font-size:12px;color:#64748b;margin-top:2px}
+.agent-card .ac2{font-size:11px;color:#16a34a;margin-top:1px;font-weight:600}
+.chart-card{background:#fff;border-radius:12px;border:1px solid #e2e8f0;padding:16px;box-shadow:0 4px 12px rgba(15,23,42,.04);margin-bottom:20px}
+.chart-card h3{font-size:13px;font-weight:700;color:#475569;margin-bottom:14px;text-transform:uppercase;letter-spacing:.05em}
+.section-h4{font-size:12px;font-weight:700;color:#334155;text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px}
+/* TOOLBAR */
+.toolbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px}
+.toolbar-left{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+input[type=text],input[type=email],input[type=date],input[type=number]{padding:7px 11px;border:1px solid #cbd5e1;border-radius:7px;font-size:13px;outline:none;background:#fff;color:#1e293b}
+input:focus{border-color:#2E75B6;box-shadow:0 0 0 2px #2E75B618}
+select.filter{padding:7px 10px;border:1px solid #cbd5e1;border-radius:7px;font-size:13px;background:#fff;outline:none;cursor:pointer;color:#1e293b}
+.btn{padding:8px 16px;border-radius:7px;border:1px solid #cbd5e1;background:#fff;color:#1F3864;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s}
+.btn:hover{background:#f1f5f9}
+.btn.primary{background:#1F3864;color:#fff;border-color:#1F3864}
+.btn.primary:hover{background:#2E75B6;border-color:#2E75B6}
+.btn.teal{background:#0f766e;color:#fff;border-color:#0f766e}
+.btn.teal:hover{background:#0d9488;border-color:#0d9488}
+.btn.sm{padding:4px 10px;font-size:12px}
+.btn.danger{color:#991b1b;border-color:#fca5a5}
+.btn.danger:hover{background:#fef2f2}
+.btn.success{background:#16a34a;color:#fff;border-color:#16a34a}
+.btn.success:hover{background:#15803d}
+/* TABLE */
+.tcard{background:#fff;border-radius:10px;border:1px solid #e2e8f0;overflow:hidden}
+table{width:100%;border-collapse:collapse;font-size:12px;table-layout:auto}
+th{background:#f8fafc;padding:9px 12px;text-align:left;font-weight:600;color:#475569;border-bottom:1px solid #e2e8f0;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;user-select:none}
+th:hover{background:#f1f5f9;color:#1F3864}
+th.sort-asc::after{content:' ▲';font-size:9px}
+th.sort-desc::after{content:' ▼';font-size:9px}
+th.no-sort{cursor:default}
+th.no-sort:hover{background:#f8fafc;color:#475569}
+td{padding:9px 12px;border-bottom:1px solid #f1f5f9;vertical-align:middle;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#f8fafc}
+.tickets-table th,.tickets-table td{text-align:center}
+.tickets-table td:first-child,.tickets-table th:first-child{font-weight:600}
+.tickets-table td .badge{margin:0 auto}
+.badge{display:inline-block;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:600;white-space:nowrap}
+/* SERVICE TICKET BADGES */
+.s-Unassigned{background:#fee2e2;color:#991b1b}
+.s-Assigned{background:#dbeafe;color:#1e40af}
+.s-InProcess{background:#e0f2fe;color:#0c4a6e}
+.s-WaitEng{background:#fef9c3;color:#713f12}
+.s-Engineering{background:#ede9fe;color:#4c1d95}
+.s-QuoteDev{background:#fce7f3;color:#831843}
+.s-QuoteSent{background:#fce7f3;color:#831843}
+.s-PO{background:#dcfce7;color:#14532d}
+.s-MatOrd{background:#f0fdf4;color:#166534}
+.s-Shipped{background:#ecfdf5;color:#065f46}
+.s-OnSite{background:#fff7ed;color:#7c2d12}
+.s-Completed{background:#d1fae5;color:#064e3b}
+/* INVOICE BADGES */
+.inv-Pending{background:#fef9c3;color:#713f12}
+.inv-Processing{background:#dbeafe;color:#1e40af}
+.inv-Sent{background:#ede9fe;color:#4c1d95}
+.inv-Paid{background:#d1fae5;color:#064e3b}
+/* PARTS BADGES */
+.p-Requested{background:#fef9c3;color:#713f12}
+.p-Quoted{background:#e0f2fe;color:#0c4a6e}
+.p-POReceived{background:#dcfce7;color:#14532d}
+.p-Shipped{background:#ccfbf1;color:#0f766e}
+.p-Delivered{background:#d1fae5;color:#064e3b}
+.p-Cancelled{background:#fee2e2;color:#991b1b}
+/* URGENCY BADGES */
+.urg-Standard{background:#f1f5f9;color:#475569}
+.urg-Urgent{background:#fef9c3;color:#92400e}
+.urg-Critical{background:#fee2e2;color:#991b1b}
+/* EMPTY */
+.empty{text-align:center;padding:48px;color:#94a3b8;font-size:14px}
+/* MODAL */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;align-items:flex-start;justify-content:center;padding:28px 16px;overflow-y:auto}
+.overlay.show{display:flex}
+.modal{background:#fff;border-radius:12px;width:min(760px,100%);box-shadow:0 20px 60px rgba(0,0,0,.2)}
+.mhdr{background:#1F3864;color:#fff;padding:15px 22px;border-radius:12px 12px 0 0;display:flex;justify-content:space-between;align-items:center}
+.mhdr.teal-hdr{background:linear-gradient(90deg,#0f766e,#0d9488)}
+.mhdr h2{font-size:15px;font-weight:700}
+.mclose{background:none;border:none;color:#fff;font-size:22px;cursor:pointer;line-height:1;padding:0 2px;opacity:.8}
+.mclose:hover{opacity:1}
+.mbody{padding:20px 22px;max-height:80vh;overflow-y:auto}
+.shdr{font-size:11px;font-weight:700;color:#2E75B6;text-transform:uppercase;letter-spacing:.08em;margin:16px 0 8px;padding-bottom:5px;border-bottom:2px solid #e2e8f0}
+.shdr.teal-shdr{color:#0f766e}
+.shdr:first-child{margin-top:0}
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:9px 16px}
+.ff{grid-column:1/-1}
+.field{display:flex;flex-direction:column;gap:4px}
+.field label{font-size:12px;font-weight:600;color:#475569}
+.field input,.field select,.field textarea{padding:7px 10px;border:1px solid #cbd5e1;border-radius:7px;font-size:13px;font-family:Arial,sans-serif;color:#1e293b;background:#fff;width:100%;outline:none}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:#2E75B6;box-shadow:0 0 0 2px #2E75B618}
+.field textarea{resize:vertical;min-height:68px}
+.cbgrid{display:grid;grid-template-columns:1fr 1fr;gap:6px;grid-column:1/-1}
+.chk{display:flex;align-items:center;gap:7px;padding:6px 10px;border:1px solid #e2e8f0;border-radius:7px;cursor:pointer;font-size:13px;color:#334155;user-select:none}
+.chk:hover{border-color:#93c5fd;background:#f0f9ff}
+.chk.on{background:#eff6ff;border-color:#3b82f6;color:#1e40af}
+.chk input{width:14px;height:14px;margin:0;cursor:pointer;accent-color:#2E75B6}
+.mftr{padding:13px 22px;border-top:1px solid #e2e8f0;display:flex;justify-content:flex-end;gap:8px;background:#f8fafc;border-radius:0 0 12px 12px}
+/* DETAIL PANEL */
+.dpover{display:none;position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:150}
+.dpover.show{display:block}
+.dpanel{display:none;position:fixed;right:0;top:0;bottom:0;width:min(490px,100%);background:#fff;overflow-y:auto;border-left:1px solid #e2e8f0;z-index:151}
+.dphdr{background:#1F3864;color:#fff;padding:14px 20px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:1}
+.dphdr.teal-hdr{background:linear-gradient(90deg,#0f766e,#0d9488)}
+.dpbody{padding:18px 20px}
+.dpsec{margin-bottom:16px}
+.dpsec h4{font-size:11px;font-weight:700;color:#2E75B6;text-transform:uppercase;letter-spacing:.08em;margin-bottom:7px;padding-bottom:4px;border-bottom:1px solid #e2e8f0}
+.dpsec h4.teal-h4{color:#0f766e}
+.drow{display:flex;justify-content:space-between;align-items:center;padding:5px 0;font-size:13px;border-bottom:1px solid #f8fafc;gap:8px}
+.drow .k{color:#64748b;flex-shrink:0}.drow .v{color:#1e293b;text-align:right;font-weight:500}
+.futag{display:inline-block;background:#eff6ff;color:#1e40af;border:1px solid #bfdbfe;border-radius:5px;padding:2px 8px;font-size:12px;margin:2px}
+/* SETTINGS */
+.set-card{background:#fff;border-radius:10px;border:1px solid #e2e8f0;padding:20px;margin-bottom:16px}
+.set-card h3{font-size:14px;font-weight:700;color:#1F3864;margin-bottom:4px}
+.set-card p{font-size:13px;color:#64748b;margin-bottom:14px}
+.agent-list{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+.agent-row{display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid #e2e8f0;border-radius:7px;background:#f8fafc}
+.agent-row .aname{flex:1;font-size:13px;font-weight:600;color:#1e293b}
+.agent-row .arole{font-size:12px;color:#64748b}
+.add-row{display:flex;gap:8px;align-items:center}
+.add-row input{flex:1;padding:7px 10px;border:1px solid #cbd5e1;border-radius:7px;font-size:13px;outline:none}
+.add-row input:focus{border-color:#2E75B6}
+/* HERO */
+.hero{background:linear-gradient(135deg,#1F3864 0%,#2E75B6 100%);color:#fff;border-radius:14px;padding:22px 26px;margin-bottom:18px;border:1px solid rgba(255,255,255,.08);box-shadow:0 12px 30px rgba(31,56,100,.12)}
+.hero h1{font-size:22px;line-height:1.15;margin-bottom:6px}
+.hero p{font-size:13px;line-height:1.6;max-width:720px;color:rgba(255,255,255,.9)}
+.hero .hero-badge{display:inline-block;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);padding:4px 10px;border-radius:999px;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px}
+.hero.parts-hero{background:linear-gradient(135deg,#0f766e 0%,#0d9488 100%)}
+/* CUSTOMER */
+.customer-cell{display:flex;align-items:center;justify-content:center;gap:8px;min-width:0;width:100%}
+.customer-cell.logo-only{justify-content:center}
+.customer-name{display:block;width:100%;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:center}
+.customer-logo-preview{margin-top:8px;min-height:42px;display:flex;align-items:center}
+.customer-badge{display:inline-flex;align-items:center;justify-content:center}
+.ford-logo{display:block;width:72px;height:auto;max-width:100%}
+.customer-badge.lg .ford-logo{width:120px}
+/* LOGIN */
+#login-screen{display:none;position:fixed;inset:0;background:linear-gradient(135deg,#0f1f3d 0%,#1F3864 55%,#2E75B6 100%);z-index:1000;align-items:center;justify-content:center}
+#login-screen.show{display:flex}
+.login-box{background:#fff;border-radius:16px;width:min(420px,92%);box-shadow:0 24px 64px rgba(0,0,0,.3);overflow:hidden}
+.login-head{background:linear-gradient(90deg,#15325a,#1F3864);padding:28px 32px 22px;text-align:center}
+.login-head img{height:46px;margin-bottom:12px;filter:drop-shadow(0 2px 4px rgba(0,0,0,.2))}
+.login-head h2{color:#fff;font-size:18px;font-weight:700;margin-bottom:4px}
+.login-head p{color:#93c5fd;font-size:12px}
+.login-body{padding:28px 32px}
+.login-field{margin-bottom:16px}
+.login-field label{display:block;font-size:12px;font-weight:600;color:#475569;margin-bottom:5px}
+.login-field input{width:100%;padding:9px 12px;border:1px solid #cbd5e1;border-radius:8px;font-size:14px;outline:none;color:#1e293b;transition:border-color .15s}
+.login-field input:focus{border-color:#2E75B6;box-shadow:0 0 0 2px #2E75B618}
+.login-error{background:#fef2f2;border:1px solid #fca5a5;color:#991b1b;border-radius:7px;padding:9px 12px;font-size:13px;margin-bottom:14px;display:none}
+.login-error.show{display:block}
+.btn-login{width:100%;padding:10px;background:#1F3864;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;transition:background .15s}
+.btn-login:hover{background:#2E75B6}
+.login-footer{text-align:center;font-size:11px;color:#94a3b8;margin-top:14px}
+.nav-user{display:flex;align-items:center;gap:8px;color:rgba(255,255,255,.85);font-size:13px}
+.nav-avatar{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;background:rgba(255,255,255,.18);color:#fff;flex-shrink:0}
+.btn-logout{padding:5px 12px;border-radius:6px;border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.1);color:#fff;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s}
+.btn-logout:hover{background:rgba(255,255,255,.22)}
+.user-row{display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid #e2e8f0;border-radius:7px;background:#f8fafc;margin-bottom:6px}
+.user-row .uname{flex:1;font-size:13px;font-weight:600;color:#1e293b}
+.user-row .urole{font-size:12px;color:#64748b;min-width:60px}
+.pw-toggle{position:relative}
+.pw-toggle input{padding-right:36px}
+.pw-eye{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#94a3b8;font-size:15px;padding:0;line-height:1}
+.pw-eye:hover{color:#475569}
+.site-footer{margin:22px auto 18px;max-width:1400px;width:100%;padding:0 20px;color:#64748b;font-size:12px}
+.site-footer a{color:#2E75B6;text-decoration:none}
+.site-footer a:hover{text-decoration:underline}
+@media(max-width:920px){nav{height:auto;flex-wrap:wrap;gap:12px;padding:14px 18px}.nav-tabs{order:3;width:100%;justify-content:flex-start;overflow:auto}.nav-tab{height:46px;padding:0 14px}.brand-mark{height:36px}.logo .brand-title{font-size:17px}}
+@media(max-width:980px){.simple-grid{grid-template-columns:1fr}}
+@media(max-width:700px){.kpi-row{grid-template-columns:1fr 1fr}.summary-grid{grid-template-columns:1fr}.fg{grid-template-columns:1fr}.ff{grid-column:1}.cbgrid{grid-template-columns:1fr}.user-form{grid-template-columns:1fr !important}}
+</style>
+</head>
+<body>
+
+<!-- LOGIN SCREEN -->
+<div id="login-screen" class="show">
+  <div class="login-box">
+    <div class="login-head">
+      <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOAAAAB3CAYAAAAaTkwaAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA4ZpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuNi1jMTMyIDc5LjE1OTI4NCwgMjAxNi8wNC8xOS0xMzoxMzo0MCAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDo0OGEwYzFmMC04NjNkLTQ3NzgtODIxMi1lNGYzZTI2YzhiNDIiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6RUEzREVDNkYzRTNFMTFFN0EwRDA4QjFGNkE0MzQ5MTEiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6RUEzREVDNkUzRTNFMTFFN0EwRDA4QjFGNkE0MzQ5MTEiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENDIDIwMTcgKE1hY2ludG9zaCkiPiA8eG1wTU06RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDo1NDc0ZWNjNi01ZTRmLTQ1ZDgtYmU5NC1kNzMyMDhiNTEwN2QiIHN0UmVmOmRvY3VtZW50SUQ9ImFkb2JlOmRvY2lkOnBob3Rvc2hvcDpjZmQwODJiZi04NmE4LTExN2EtYmFl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" alt="JIER">
+      <h2>JIER North America</h2>
+      <p>Service Management System</p>
+    </div>
+    <div class="login-body">
+      <div class="login-error" id="login-error">Incorrect username or password.</div>
+      <div class="login-field">
+        <label>Username</label>
+        <input type="text" id="login-username" placeholder="Enter your username" autocomplete="username" onkeydown="if(event.key==='Enter')doLogin()">
+      </div>
+      <div class="login-field">
+        <label>Password</label>
+        <div class="pw-toggle">
+          <input type="password" id="login-password" placeholder="Enter your password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+          <button class="pw-eye" onclick="togglePw('login-password',this)" tabindex="-1">👁</button>
+        </div>
+      </div>
+      <button class="btn-login" onclick="doLogin()">Sign In</button>
+      <div class="login-footer">Access restricted to authorized JIER NA personnel. If no users exist yet, the first sign-in creates the admin account.</div>
+    </div>
+  </div>
+</div>
+
+<nav>
+  <div class="logo-wrap">
+    <img class="brand-mark" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOAAAAB3CAYAAAAaTkwaAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA4ZpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuNi1jMTMyIDc5LjE1OTI4NCwgMjAxNi8wNC8xOS0xMzoxMzo0MCAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDo0OGEwYzFmMC04NjNkLTQ3NzgtODIxMi1lNGYzZTI2YzhiNDIiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6RUEzREVDNkYzRTNFMTFFN0EwRDA4QjFGNkE0MzQ5MTEiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6RUEzREVDNkUzRTNFMTFFN0EwRDA4QjFGNkE0MzQ5MTEiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENDIDIwMTcgKE1hY2ludG9zaCkiPiA8eG1wTU06RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDo1NDc0ZWNjNi01ZTRmLTQ1ZDgtYmU5NC1kNzMyMDhiNTEwN2QiIHN0UmVmOmRvY3VtZW50SUQ9ImFkb2JlOmRvY2lkOnBob3Rvc2hvcDpjZmQwODJiZi04NmE4LTExN2EtYmFl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" alt="JIER North America">
+    <div class="logo">
+      <div class="brand-title">JIER North America</div>
+      <div class="brand-subtitle">Service Management System</div>
+      <div class="brand-tagline">The Trusted Global Supplier of Stamping Equipment</div>
+    </div>
+  </div>
+  <div class="nav-tabs">
+    <div class="nav-tab active" onclick="showPage('dashboard')">Dashboard</div>
+    <div class="nav-tab" onclick="showPage('tickets')" id="nav-tickets">Service Tickets</div>
+    <div class="nav-tab" onclick="showPage('parts')" id="nav-parts">Parts Requests</div>
+    <div class="nav-tab" onclick="showPage('settings')" id="nav-settings-tab">Settings</div>
+  </div>
+  <div class="nav-right">
+    <div class="nav-user">
+      <div class="nav-avatar" id="nav-avatar"></div>
+      <span id="nav-username" style="font-weight:600"></span>
+    </div>
+    <button class="btn-logout" onclick="doLogout()">Sign Out</button>
+    <button class="btn" style="background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.28);color:#fff;font-size:12px" onclick="exportActiveCSV()">Export CSV</button>
+    <button class="btn primary" id="nav-new-btn" onclick="openNewFromNav()" style="font-size:12px;box-shadow:0 8px 20px rgba(0,0,0,.16)">+ New</button>
+  </div>
+</nav>
+
+<!-- DASHBOARD -->
+<div class="page active" id="page-dashboard">
+  <div class="hero">
+    <div>
+      <div class="hero-badge">JIER North America</div>
+      <h1>Service Management Dashboard</h1>
+      <p>Overview of service tickets, parts requests, engineer workload, and billing status.</p>
+    </div>
+  </div>
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+    <div class="dash-tabs">
+      <div class="dash-tab active" onclick="switchDashTab('svc')">🔧 Service Tickets</div>
+      <div class="dash-tab parts-tab" onclick="switchDashTab('parts')">📦 Parts Requests</div>
+    </div>
+    <div style="font-size:12px;color:#64748b" id="dash-updated"></div>
+  </div>
+
+  <!-- SERVICE DASHBOARD -->
+  <div class="dash-panel active" id="dash-svc">
+    <div class="kpi-row" id="kpi-row-svc"></div>
+    <div id="charts-row-svc"></div>
+    <div class="chart-card">
+      <h3>Engineer Workload — Service Tickets</h3>
+      <div class="agent-grid" id="agent-grid-svc"></div>
+    </div>
+  </div>
+
+  <!-- PARTS DASHBOARD -->
+  <div class="dash-panel" id="dash-parts">
+    <div class="kpi-row" id="kpi-row-parts"></div>
+    <div id="charts-row-parts"></div>
+    <div class="chart-card">
+      <h3>Engineer Workload — Parts Requests</h3>
+      <div class="agent-grid" id="agent-grid-parts"></div>
+    </div>
+  </div>
+</div>
+
+<!-- SERVICE TICKETS PAGE -->
+<div class="page" id="page-tickets">
+  <div class="toolbar">
+    <div class="toolbar-left">
+      <input type="text" id="search" placeholder="Search company, contact, ticket..." oninput="renderTable()" style="width:220px">
+      <select class="filter" id="f-status-filter" onchange="renderTable()">
+        <option value="">All statuses</option>
+        <option>Unassigned</option><option>Assigned</option><option>In Process</option>
+        <option>Waiting Engineering Support</option><option>Engineering</option>
+        <option>Quote Development</option><option>Quote Submitted to Customer</option>
+        <option>Purchase Order Received</option><option>Material Ordered</option>
+        <option>Material Shipped</option><option>Support On Site</option><option>Completed</option>
+      </select>
+      <select class="filter" id="f-product-filter" onchange="renderTable()">
+        <option value="">All products</option>
+        <option>Press</option><option>Automation</option><option>Transfer System</option>
+        <option>Die Cushion</option><option>Coil Feed</option><option>Straightener</option><option>Other</option>
+      </select>
+      <select class="filter" id="f-agent-filter" onchange="renderTable()">
+        <option value="">All engineers</option>
+      </select>
+    </div>
+    <button class="btn primary" onclick="openForm()">+ New Ticket</button>
+  </div>
+  <div class="tcard">
+    <div style="overflow-x:auto">
+      <table class="tickets-table">
+        <thead><tr>
+          <th onclick="sortBy('id','svc')">Ticket #</th>
+          <th onclick="sortBy('jobnum','svc')">Jier Job #</th>
+          <th onclick="sortBy('date','svc')">Date</th>
+          <th onclick="sortBy('company','svc')">Company</th>
+          <th onclick="sortBy('plant','svc')">Plant Location</th>
+          <th onclick="sortBy('product','svc')">Product</th>
+          <th onclick="sortBy('assigned','svc')">Assigned Engineer</th>
+          <th onclick="sortBy('status','svc')">Status</th>
+          <th onclick="sortBy('invoice','svc')">Invoice Status</th>
+          <th onclick="sortBy('completed','svc')">Completed Date</th>
+          <th class="no-sort">Actions</th>
+        </tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+    <div id="empty" class="empty" style="display:none">No tickets yet — click "+ New Ticket" to get started.</div>
+  </div>
+</div>
+
+<!-- PARTS REQUESTS PAGE -->
+<div class="page" id="page-parts">
+  <div class="toolbar">
+    <div class="toolbar-left">
+      <input type="text" id="p-search" placeholder="Search company, part #, description, PO, tracking..." oninput="renderPartsTable()" style="width:300px">
+      <select class="filter" id="p-status-filter" onchange="renderPartsTable()">
+        <option value="">All statuses</option>
+        <option>Requested</option><option>Quoted</option><option>PO Received</option>
+        <option>Shipped</option><option>Delivered</option><option>Cancelled</option>
+      </select>
+      <select class="filter" id="p-urgency-filter" onchange="renderPartsTable()">
+        <option value="">All urgency</option>
+        <option>Standard</option><option>Urgent</option><option>Critical</option>
+      </select>
+      <select class="filter" id="p-agent-filter" onchange="renderPartsTable()">
+        <option value="">All handlers</option>
+      </select>
+    </div>
+    <button class="btn teal" onclick="openPartsForm()">+ New Parts Request</button>
+  </div>
+  <div class="tcard">
+    <div style="overflow-x:auto">
+      <table class="tickets-table">
+        <thead><tr>
+          <th onclick="sortBy('id','parts')">Request #</th>
+          <th onclick="sortBy('date','parts')">Date</th>
+          <th onclick="sortBy('company','parts')">Company</th>
+          <th onclick="sortBy('contact','parts')">Contact</th>
+          <th onclick="sortBy('equipment','parts')">Equipment Model</th>
+          <th onclick="sortBy('partnum','parts')">Part Number</th>
+          <th onclick="sortBy('qty','parts')">Qty</th>
+          <th onclick="sortBy('urgency','parts')">Urgency</th>
+          <th onclick="sortBy('assigned','parts')">Handler</th>
+          <th onclick="sortBy('status','parts')">Status</th>
+          <th onclick="sortBy('quotedprice','parts')">Quote</th>
+          <th class="no-sort">Actions</th>
+        </tr></thead>
+        <tbody id="ptbody"></tbody>
+      </table>
+    </div>
+    <div id="p-empty" class="empty" style="display:none">No parts requests yet — click "+ New Parts Request" to get started.</div>
+  </div>
+</div>
+
+<!-- SETTINGS -->
+<div class="page" id="page-settings">
+  <div style="font-size:18px;font-weight:700;color:#1F3864;margin-bottom:16px">Settings</div>
+  <div class="set-card" id="user-mgmt-card">
+    <h3>User Accounts</h3>
+    <p>Manage who can log in. Only admins can add or remove users. <strong>User role</strong>: sees only tickets/parts assigned to their own username. <strong>Admin</strong>: sees everything.</p>
+    <div id="user-list" style="margin-bottom:12px"></div>
+    <div class="user-form" style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:8px;align-items:center">
+      <input type="text" id="new-user-name" placeholder="Username" onkeydown="if(event.key==='Enter')addUser()">
+      <div class="pw-toggle" style="position:relative">
+        <input type="password" id="new-user-pw" placeholder="Password" onkeydown="if(event.key==='Enter')addUser()" style="width:100%;padding:7px 36px 7px 10px;border:1px solid #cbd5e1;border-radius:7px;font-size:13px;outline:none">
+        <button class="pw-eye" onclick="togglePw('new-user-pw',this)" tabindex="-1">👁</button>
+      </div>
+      <select id="new-user-role" style="padding:7px 10px;border:1px solid #cbd5e1;border-radius:7px;font-size:13px;background:#fff;outline:none">
+        <option value="user">User</option><option value="admin">Admin</option>
+      </select>
+      <button class="btn success" onclick="addUser()">+ Add</button>
+    </div>
+    <div style="font-size:11px;color:#94a3b8;margin-top:8px">Username must exactly match the Assigned Engineer / Handler name for User-role filtering to work.</div>
+  </div>
+  <div class="set-card">
+    <h3>Engineers / Handlers</h3>
+    <p>These names appear in both Service Ticket and Parts Request assignment dropdowns.</p>
+    <div class="agent-list" id="agent-list"></div>
+    <div class="add-row">
+      <input type="text" id="new-agent-name" placeholder="Engineer name" onkeydown="if(event.key==='Enter')addAgent()">
+      <input type="text" id="new-agent-role" placeholder="Role (optional)" onkeydown="if(event.key==='Enter')addAgent()" style="max-width:160px">
+      <button class="btn success" onclick="addAgent()">+ Add</button>
+    </div>
+  </div>
+</div>
+
+<!-- SERVICE TICKET FORM MODAL -->
+<div class="overlay" id="overlay" onclick="if(event.target===this)closeForm()">
+  <div class="modal">
+    <div class="mhdr"><h2 id="modal-title">New Service Ticket</h2><button class="mclose" onclick="closeForm()">&#215;</button></div>
+    <div class="mbody">
+      <div class="shdr">Ticket Identification</div>
+      <div class="fg">
+        <div class="field"><label>Ticket #</label><input type="text" id="f-id" readonly style="background:#f8fafc;color:#64748b"></div>
+        <div class="field"><label>Jier Job #</label><input type="text" id="f-jobnum" placeholder="SVS-26-XXXX"></div>
+      </div>
+      <div class="shdr">Contact Information</div>
+      <div class="fg">
+        <div class="field"><label>Date Received *</label><input type="date" id="f-date"></div>
+        <div class="field"><label>Company Name *</label><input type="text" id="f-company" placeholder="e.g. Acme Corp" oninput="updateCompanyLogoPreview()"><div id="company-logo-preview" class="customer-logo-preview"></div></div>
+        <div class="field ff"><label>Plant Location</label><input type="text" id="f-plant" placeholder="e.g. Detroit Plant, Building 3"></div>
+        <div class="field"><label>Contact Person(s)</label><input type="text" id="f-contact" placeholder="Name(s)"></div>
+        <div class="field"><label>Contact Email</label><input type="email" id="f-email" placeholder="email@example.com"></div>
+        <div class="field"><label>Contact Phone</label><input type="text" id="f-phone" placeholder="+1 (555) 000-0000"></div>
+      </div>
+      <div class="shdr">Product Information</div>
+      <div class="fg">
+        <div class="field"><label>Product Type</label>
+          <select id="f-product-form">
+            <option value="">— Select —</option>
+            <option>Press</option><option>Automation</option><option>Transfer System</option>
+            <option>Die Cushion</option><option>Coil Feed</option><option>Straightener</option><option>Other</option>
+          </select>
+        </div>
+        <div class="field"><label>Model Number / Tonnage</label><input type="text" id="f-model" placeholder="e.g. 300T / Model XL-3"></div>
+      </div>
+      <div class="shdr">Issue Description</div>
+      <div class="field"><label>Issue Description</label><textarea id="f-issue" rows="4" placeholder="Describe the customer's issue in detail..."></textarea></div>
+      <div class="shdr">Follow-Up Required</div>
+      <div class="cbgrid" id="fu-grid"></div>
+      <div class="shdr">Tracking &amp; Assignment</div>
+      <div class="fg">
+        <div class="field"><label>Issue Status</label>
+          <select id="f-status-form">
+            <option>Unassigned</option><option>Assigned</option><option>In Process</option>
+            <option>Waiting Engineering Support</option><option>Engineering</option>
+            <option>Quote Development</option><option>Quote Submitted to Customer</option>
+            <option>Purchase Order Received</option><option>Material Ordered</option>
+            <option>Material Shipped</option><option>Support On Site</option><option>Completed</option>
+          </select>
+        </div>
+        <div class="field"><label>Assigned Engineer</label><select id="f-assigned"></select></div>
+        <div class="field"><label>Invoice Status</label>
+          <select id="f-invoice">
+            <option value="">— None —</option>
+            <option>Pending Invoice</option><option>Invoice Processing</option>
+            <option>Invoice Sent</option><option>Invoice Paid</option>
+          </select>
+        </div>
+      </div>
+      <div class="shdr">Resolution</div>
+      <div class="fg">
+        <div class="field"><label>Date Completed</label><input type="date" id="f-completed"></div>
+        <div class="field ff"><label>Resolution Description</label><textarea id="f-resolution" rows="3" placeholder="How was the issue resolved?"></textarea></div>
+      </div>
+    </div>
+    <div class="mftr">
+      <button class="btn" onclick="closeForm()">Cancel</button>
+      <button class="btn primary" onclick="saveTicket()">Save Ticket</button>
+    </div>
+  </div>
+</div>
+
+<!-- PARTS REQUEST FORM MODAL -->
+<div class="overlay" id="p-overlay" onclick="if(event.target===this)closePartsForm()">
+  <div class="modal">
+    <div class="mhdr teal-hdr"><h2 id="p-modal-title">New Parts Request</h2><button class="mclose" onclick="closePartsForm()">&#215;</button></div>
+    <div class="mbody">
+      <div class="shdr teal-shdr">Request Identification</div>
+      <div class="fg">
+        <div class="field"><label>Request #</label><input type="text" id="p-id" readonly style="background:#f8fafc;color:#64748b"></div>
+        <div class="field"><label>Date Received *</label><input type="date" id="p-date"></div>
+      </div>
+      <div class="shdr teal-shdr">Customer Information</div>
+      <div class="fg">
+        <div class="field"><label>Company Name *</label><input type="text" id="p-company" placeholder="e.g. Acme Corp" oninput="updatePartsLogoPreview()"><div id="p-company-logo-preview" class="customer-logo-preview"></div></div>
+        <div class="field"><label>Plant Location</label><input type="text" id="p-plant" placeholder="e.g. Detroit Plant, Building 3"></div>
+        <div class="field"><label>Contact Person</label><input type="text" id="p-contact" placeholder="Name(s)"></div>
+        <div class="field"><label>Contact Email</label><input type="email" id="p-email" placeholder="email@example.com"></div>
+        <div class="field"><label>Contact Phone</label><input type="text" id="p-phone" placeholder="+1 (555) 000-0000"></div>
+        <div class="field"><label>Equipment Model / Tonnage</label><input type="text" id="p-equipment" placeholder="e.g. 300T Press / Model XL-3"></div>
+      </div>
+      <div class="shdr teal-shdr">Parts Information</div>
+      <div class="fg">
+        <div class="field"><label>Part Number</label><input type="text" id="p-partnum" placeholder="e.g. JR-2045-A"></div>
+        <div class="field"><label>Quantity *</label><input type="number" id="p-qty" placeholder="1" min="1"></div>
+        <div class="field ff"><label>Part Description *</label><input type="text" id="p-partdesc" placeholder="Describe the part in detail"></div>
+        <div class="field ff"><label>Additional Notes</label><textarea id="p-notes" rows="3" placeholder="Special requirements, installation notes, etc."></textarea></div>
+      </div>
+      <div class="shdr teal-shdr">Urgency &amp; Assignment</div>
+      <div class="fg">
+        <div class="field"><label>Urgency Level</label>
+          <select id="p-urgency">
+            <option>Standard</option><option>Urgent</option><option>Critical</option>
+          </select>
+        </div>
+        <div class="field"><label>Assigned Handler</label><select id="p-assigned"></select></div>
+      </div>
+      <div class="shdr teal-shdr">Status &amp; Pricing</div>
+      <div class="fg">
+        <div class="field"><label>Status</label>
+          <select id="p-status-form">
+            <option>Requested</option><option>Quoted</option><option>PO Received</option>
+            <option>Shipped</option><option>Delivered</option><option>Cancelled</option>
+          </select>
+        </div>
+        <div class="field"><label>Quoted Price (USD)</label><input type="number" id="p-quotedprice" placeholder="0.00" min="0" step="0.01"></div>
+        <div class="field"><label>PO Number</label><input type="text" id="p-ponum" placeholder="PO-XXXX"></div>
+        <div class="field"><label>Tracking Number</label><input type="text" id="p-tracking" placeholder="Carrier tracking #"></div>
+        <div class="field"><label>Ship Date</label><input type="date" id="p-shipdate"></div>
+        <div class="field"><label>Delivery Date</label><input type="date" id="p-deliverydate"></div>
+      </div>
+    </div>
+    <div class="mftr">
+      <button class="btn" onclick="closePartsForm()">Cancel</button>
+      <button class="btn teal" onclick="savePartsRequest()">Save Request</button>
+    </div>
+  </div>
+</div>
+
+<!-- SERVICE TICKET DETAIL PANEL -->
+<div class="dpover" id="dpover" onclick="closeDetail()"></div>
+<div class="dpanel" id="dpanel">
+  <div class="dphdr">
+    <div><div style="font-size:15px;font-weight:700" id="dp-title"></div><div style="font-size:12px;opacity:.7;margin-top:2px" id="dp-sub"></div></div>
+    <button class="mclose" onclick="closeDetail()">&#215;</button>
+  </div>
+  <div class="dpbody" id="dpbody"></div>
+</div>
+
+<!-- PARTS REQUEST DETAIL PANEL -->
+<div class="dpover" id="p-dpover" onclick="closePartsDetail()"></div>
+<div class="dpanel" id="p-dpanel">
+  <div class="dphdr teal-hdr">
+    <div><div style="font-size:15px;font-weight:700" id="p-dp-title"></div><div style="font-size:12px;opacity:.7;margin-top:2px" id="p-dp-sub"></div></div>
+    <button class="mclose" onclick="closePartsDetail()">&#215;</button>
+  </div>
+  <div class="dpbody" id="p-dpbody"></div>
+</div>
+
+<div class="site-footer">Branded for JIER North America. Website: <a href="https://www.jier-na.com/" target="_blank" rel="noopener noreferrer">jier-na.com</a></div>
+
+<script>
+/* ══════════════════════════════════════════
+   AUTH
+══════════════════════════════════════════ */
+const USERS_KEY='svc_users';
+const SESSION_KEY='svc_session';
+
+function hashSimple(str){let h=0;for(let i=0;i<str.length;i++){h=((h<<5)-h)+str.charCodeAt(i);h|=0;}return h.toString(36);}
+function loadUsers(){try{return JSON.parse(localStorage.getItem(USERS_KEY)||'[]');}catch(e){return [];}}
+function saveUsers(list){localStorage.setItem(USERS_KEY,JSON.stringify(list));}
+function currentSession(){try{return JSON.parse(sessionStorage.getItem(SESSION_KEY)||'null');}catch(e){return null;}}
+function isAdmin(){const s=currentSession();return s&&s.role==='admin';}
+
+function doLogin(){
+  const uname=document.getElementById('login-username').value.trim();
+  const pw=document.getElementById('login-password').value;
+  const err=document.getElementById('login-error');
+  if(!uname||!pw){err.textContent='Please enter username and password.';err.classList.add('show');return;}
+  const users=loadUsers();
+  if(!users.length){
+    const firstUser={username:uname,pwHash:hashSimple(pw),role:'admin'};
+    saveUsers([firstUser]);
+    err.classList.remove('show');
+    sessionStorage.setItem(SESSION_KEY,JSON.stringify({username:firstUser.username,role:firstUser.role}));
+    document.getElementById('login-screen').classList.remove('show');
+    initApp();
+    setTimeout(()=>alert('First admin account created.'),60);
+    return;
+  }
+  const user=users.find(u=>u.username.toLowerCase()===uname.toLowerCase()&&u.pwHash===hashSimple(pw));
+  if(!user){err.textContent='Incorrect username or password.';err.classList.add('show');document.getElementById('login-password').value='';return;}
+  err.classList.remove('show');
+  sessionStorage.setItem(SESSION_KEY,JSON.stringify({username:user.username,role:user.role}));
+  document.getElementById('login-screen').classList.remove('show');
+  initApp();
+}
+function doLogout(){
+  if(!confirm('Sign out?'))return;
+  sessionStorage.removeItem(SESSION_KEY);
+  document.getElementById('login-screen').classList.add('show');
+  document.getElementById('login-username').value='';
+  document.getElementById('login-password').value='';
+  document.getElementById('login-error').classList.remove('show');
+  setTimeout(()=>document.getElementById('login-username').focus(),80);
+}
+function togglePw(id,btn){
+  const inp=document.getElementById(id);
+  inp.type=inp.type==='password'?'text':'password';
+  btn.textContent=inp.type==='password'?'👁':'🙈';
+}
+function updateNavUser(){
+  const s=currentSession();if(!s)return;
+  document.getElementById('nav-avatar').textContent=s.username.slice(0,2).toUpperCase();
+  document.getElementById('nav-username').textContent=s.username+(s.role==='admin'?' (Admin)':'');
+}
+
+/* ── USER MANAGEMENT ── */
+function renderUsers(){
+  const card=document.getElementById('user-mgmt-card');
+  if(!isAdmin()){card.style.display='none';return;}
+  card.style.display='';
+  const users=loadUsers();const me=currentSession();
+  document.getElementById('user-list').innerHTML=users.map((u,i)=>`
+    <div class="user-row">
+      <div class="uname">${escapeHtml(u.username)}</div>
+      <div class="urole" style="color:${u.role==='admin'?'#2563eb':'#64748b'}">${u.role==='admin'?'Admin':'User'}</div>
+      ${u.username.toLowerCase()===me.username.toLowerCase()
+        ?'<span style="font-size:11px;color:#94a3b8">current</span>'
+        :`<button class="btn sm danger" onclick="removeUser(${i})">Remove</button>`}
+    </div>`).join('');
+}
+function addUser(){
+  if(!isAdmin()){alert('Only admins can add users.');return;}
+  const name=document.getElementById('new-user-name').value.trim();
+  const pw=document.getElementById('new-user-pw').value;
+  const role=document.getElementById('new-user-role').value;
+  if(!name||!pw){alert('Username and password are required.');return;}
+  const users=loadUsers();
+  if(users.find(u=>u.username.toLowerCase()===name.toLowerCase())){alert('Username already exists.');return;}
+  users.push({username:name,pwHash:hashSimple(pw),role});saveUsers(users);
+  document.getElementById('new-user-name').value='';document.getElementById('new-user-pw').value='';
+  renderUsers();
+}
+function removeUser(i){
+  if(!isAdmin())return;
+  const users=loadUsers();const me=currentSession();
+  if(users[i].username.toLowerCase()===me.username.toLowerCase()){alert('You cannot remove your own account.');return;}
+  if(!confirm(`Remove user "${users[i].username}"?`))return;
+  users.splice(i,1);saveUsers(users);renderUsers();
+}
+
+/* ══════════════════════════════════════════
+   DATA & CONSTANTS
+══════════════════════════════════════════ */
+const FOLLOWUPS=['Technical Support','Troubleshooting Assistance','Field Service Support',
+  'Material Identification','Service Support Quote','Replacement Parts Quote'];
+
+const SVC_STATUS_KEY={
+  'Unassigned':'Unassigned','Assigned':'Assigned','In Process':'InProcess',
+  'Waiting Engineering Support':'WaitEng','Engineering':'Engineering',
+  'Quote Development':'QuoteDev','Quote Submitted to Customer':'QuoteSent',
+  'Purchase Order Received':'PO','Material Ordered':'MatOrd',
+  'Material Shipped':'Shipped','Support On Site':'OnSite','Completed':'Completed'
+};
+const SVC_STATUS_COLORS={
+  'Unassigned':'#fca5a5','Assigned':'#93c5fd','In Process':'#7dd3fc',
+  'Waiting Engineering Support':'#fde68a','Engineering':'#c4b5fd',
+  'Quote Development':'#f9a8d4','Quote Submitted to Customer':'#f9a8d4',
+  'Purchase Order Received':'#86efac','Material Ordered':'#6ee7b7',
+  'Material Shipped':'#34d399','Support On Site':'#fdba74','Completed':'#4ade80'
+};
+const PARTS_STATUS_COLORS={
+  'Requested':'#fde68a','Quoted':'#7dd3fc','PO Received':'#86efac',
+  'Shipped':'#34d399','Delivered':'#4ade80','Cancelled':'#fca5a5'
+};
+const PARTS_STATUS_KEY={
+  'Requested':'Requested','Quoted':'Quoted','PO Received':'POReceived',
+  'Shipped':'Shipped','Delivered':'Delivered','Cancelled':'Cancelled'
+};
+const INV_KEY={'Pending Invoice':'Pending','Invoice Processing':'Processing','Invoice Sent':'Sent','Invoice Paid':'Paid'};
+const AVATAR_COLORS=['#bfdbfe','#bbf7d0','#fde68a','#fecaca','#e9d5ff','#fed7aa','#99f6e4','#fce7f3'];
+const AVATAR_TEXT=['#1e40af','#14532d','#713f12','#991b1b','#4c1d95','#7c2d12','#0f766e','#831843'];
+
+function safeParse(v){try{return JSON.parse(v||'[]');}catch(e){return[];}}
+function firstValidArray(keys){for(const k of keys){const a=safeParse(localStorage.getItem(k));if(Array.isArray(a)&&a.length)return a;}return[];}
+
+function normalizeTickets(list){
+  if(!Array.isArray(list))return[];
+  return list.map((t,idx)=>({
+    id:t.id||('T'+String(idx+1).padStart(3,'0')),jobnum:t.jobnum||'',date:t.date||'',
+    company:t.company||'',plant:t.plant||'',contact:t.contact||'',email:t.email||'',phone:t.phone||'',
+    product:t.product||'',model:t.model||'',issue:t.issue||'',
+    followup:Array.isArray(t.followup)?t.followup:[],
+    status:t.status||'Unassigned',assigned:t.assigned||'Unassigned',
+    invoice:t.invoice||'',completed:t.completed||'',resolution:t.resolution||''
+  }));
+}
+function normalizeParts(list){
+  if(!Array.isArray(list))return[];
+  return list.map((p,idx)=>({
+    id:p.id||('P'+String(idx+1).padStart(3,'0')),date:p.date||'',
+    company:p.company||'',plant:p.plant||'',contact:p.contact||'',email:p.email||'',phone:p.phone||'',
+    equipment:p.equipment||'',partnum:p.partnum||'',qty:p.qty||'',
+    partdesc:p.partdesc||'',notes:p.notes||'',urgency:p.urgency||'Standard',
+    assigned:p.assigned||'Unassigned',status:p.status||'Requested',
+    quotedprice:p.quotedprice||'',ponum:p.ponum||'',tracking:p.tracking||'',
+    shipdate:p.shipdate||'',deliverydate:p.deliverydate||''
+  }));
+}
+function normalizeEngineers(list){
+  if(!Array.isArray(list))return[];
+  return list.map(a=>({name:(a.name||'').trim(),role:(a.role||'Engineer').trim()})).filter(a=>a.name);
+}
+
+let tickets=normalizeTickets(firstValidArray(['svc_t4','svc_tickets']));
+let parts=normalizeParts(safeParse(localStorage.getItem('svc_parts')||'[]'));
+let agents=normalizeEngineers(firstValidArray(['svc_engineers','svc_agents']));
+let editIdx=null,editPartsIdx=null;
+let currentPage='dashboard';
+let activeDashTab='svc';
+
+if(!agents.length){
+  agents=[{name:'Unassigned',role:''},{name:'John Smith',role:'Field Engineer'},{name:'Sarah Lee',role:'Technical Support'}];
+  saveAgents();
+}
+
+function save(){localStorage.setItem('svc_t4',JSON.stringify(tickets));}
+function saveParts(){localStorage.setItem('svc_parts',JSON.stringify(parts));}
+function saveAgents(){localStorage.setItem('svc_engineers',JSON.stringify(agents));}
+function nextSvcId(){const nums=tickets.map(t=>parseInt((t.id||'T000').replace(/\D/g,''))||0);return 'T'+String((nums.length?Math.max(...nums):0)+1).padStart(3,'0');}
+function nextPartsId(){const nums=parts.map(p=>parseInt((p.id||'P000').replace(/\D/g,''))||0);return 'P'+String((nums.length?Math.max(...nums):0)+1).padStart(3,'0');}
+
+/* ══════════════════════════════════════════
+   UTILITIES
+══════════════════════════════════════════ */
+function escapeHtml(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}
+
+let svcSortKey='date',svcSortDir=-1;
+let partsSortKey='date',partsSortDir=-1;
+
+function sortBy(key,module){
+  if(module==='svc'){
+    if(svcSortKey===key){svcSortDir*=-1;}else{svcSortKey=key;svcSortDir=-1;}
+    renderTable();
+  } else {
+    if(partsSortKey===key){partsSortDir*=-1;}else{partsSortKey=key;partsSortDir=-1;}
+    renderPartsTable();
+  }
+}
+
+/* permission filter */
+function visibleTickets(){
+  const s=currentSession();
+  if(!s||s.role==='admin') return tickets;
+  return tickets.filter(t=>(t.assigned||'').toLowerCase()===s.username.toLowerCase());
+}
+function visibleParts(){
+  const s=currentSession();
+  if(!s||s.role==='admin') return parts;
+  return parts.filter(p=>(p.assigned||'').toLowerCase()===s.username.toLowerCase());
+}
+
+/* ══════════════════════════════════════════
+   PAGES
+══════════════════════════════════════════ */
+const PAGES=['dashboard','tickets','parts','settings'];
+function showPage(p){
+  currentPage=p;
+  document.querySelectorAll('.page').forEach(el=>el.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(el=>el.classList.remove('active'));
+  document.getElementById('page-'+p).classList.add('active');
+  const tabIdx=PAGES.indexOf(p);
+  document.querySelectorAll('.nav-tab')[tabIdx].classList.add('active');
+  // update new button label
+  const btn=document.getElementById('nav-new-btn');
+  if(p==='tickets'){btn.textContent='+ New Ticket';btn.onclick=()=>openForm();}
+  else if(p==='parts'){btn.textContent='+ New Parts Request';btn.onclick=()=>openPartsForm();}
+  else{btn.textContent='+ New';btn.onclick=openNewFromNav;}
+  if(p==='dashboard')renderDash();
+  if(p==='tickets')renderTable();
+  if(p==='parts')renderPartsTable();
+  if(p==='settings')renderSettings();
+}
+function openNewFromNav(){
+  if(currentPage==='tickets')openForm();
+  else if(currentPage==='parts')openPartsForm();
+  else{showPage('tickets');openForm();}
+}
+
+/* ══════════════════════════════════════════
+   DASHBOARD
+══════════════════════════════════════════ */
+function switchDashTab(tab){
+  activeDashTab=tab;
+  document.querySelectorAll('.dash-tab').forEach((el,i)=>{
+    el.classList.toggle('active',(['svc','parts'][i])===tab);
+  });
+  document.querySelectorAll('.dash-panel').forEach(el=>el.classList.remove('active'));
+  document.getElementById('dash-'+tab).classList.add('active');
+}
+
+function renderDash(){
+  document.getElementById('dash-updated').textContent='Last updated: '+new Date().toLocaleString();
+  renderSvcDash();
+  renderPartsDash();
+}
+
+function renderSvcDash(){
+  const data=visibleTickets();
+  const total=data.length,open=data.filter(t=>t.status!=='Completed').length;
+  const unas=data.filter(t=>!t.status||t.status==='Unassigned').length;
+  const done=data.filter(t=>t.status==='Completed').length;
+  const lastDone=data.filter(t=>t.completed).sort((a,b)=>String(b.completed).localeCompare(String(a.completed)));
+
+  document.getElementById('kpi-row-svc').innerHTML=`
+    <div class="kpi"><div class="n">${total}</div><div class="l">Total Tickets</div></div>
+    <div class="kpi k2"><div class="n">${open}</div><div class="l">Open Tickets</div><div class="sub" style="color:#2563eb">${total?Math.round(open/total*100):0}% of total</div></div>
+    <div class="kpi k3"><div class="n">${unas}</div><div class="l">Unassigned</div>${unas>0?'<div class="sub" style="color:#d97706">Need attention</div>':''}</div>
+    <div class="kpi k4"><div class="n">${done}</div><div class="l">Completed</div><div class="sub" style="color:#16a34a">Last: ${lastDone[0]?lastDone[0].completed:'—'}</div></div>`;
+
+  const statusCounts={};data.forEach(t=>{const s=t.status||'Unassigned';statusCounts[s]=(statusCounts[s]||0)+1;});
+  const statusEntries=Object.entries(statusCounts).sort((a,b)=>b[1]-a[1]);
+  const maxS=Math.max(1,...statusEntries.map(x=>x[1]));
+  const statusBars=statusEntries.map(([s,c])=>`<div class="compact-row"><div class="bar-label" title="${s}">${s}</div><div class="bar-track"><div class="bar-fill" style="width:${Math.max(8,Math.round(c/maxS*100))}%;background:${SVC_STATUS_COLORS[s]||'#cbd5e1'}"></div></div><div class="bar-count">${c}</div></div>`).join('')||'<div style="color:#94a3b8;font-size:13px;padding:20px 0;text-align:center">No tickets yet — click <strong>+ New Ticket</strong> to get started.</div>';
+
+  const prodCounts={};data.forEach(t=>{if(t.product)prodCounts[t.product]=(prodCounts[t.product]||0)+1;});
+  const prodEntries=Object.entries(prodCounts).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  const prodColors=['#93c5fd','#86efac','#fde68a','#fca5a5','#c4b5fd'];
+  const maxP=Math.max(1,...prodEntries.map(x=>x[1]));
+  const productBars=prodEntries.map(([p,c],i)=>`<div class="compact-row"><div class="bar-label" title="${p}">${p}</div><div class="bar-track"><div class="bar-fill" style="width:${Math.max(8,Math.round(c/maxP*100))}%;background:${prodColors[i%5]}"></div></div><div class="bar-count">${c}</div></div>`).join('')||'<div style="color:#94a3b8;font-size:13px">No product data yet</div>';
+
+  const invCounts={};data.forEach(t=>{if(t.invoice)invCounts[t.invoice]=(invCounts[t.invoice]||0)+1;});
+  const invColors={'Pending Invoice':'#eab308','Invoice Processing':'#60a5fa','Invoice Sent':'#a78bfa','Invoice Paid':'#34d399'};
+  const maxI=Math.max(1,...Object.values(invCounts));
+  const invoiceBars=Object.entries(invCounts).sort((a,b)=>b[1]-a[1]).map(([s,c])=>`<div class="compact-row"><div class="bar-label" title="${s}">${s}</div><div class="bar-track"><div class="bar-fill" style="width:${Math.max(8,Math.round(c/maxI*100))}%;background:${invColors[s]||'#cbd5e1'}"></div></div><div class="bar-count">${c}</div></div>`).join('')||'<div style="color:#94a3b8;font-size:13px">No invoice data yet</div>';
+
+  document.getElementById('charts-row-svc').innerHTML=`
+    <div class="simple-grid">
+      <div class="simple-card">
+        <div class="section-label-svc">Service Ticket Status</div>
+        <div class="compact-list">${statusBars}</div>
+        <div class="simple-note">Completion rate: ${total?Math.round(done/total*100):0}%</div>
+      </div>
+      <div class="simple-stack">
+        <div class="simple-card">
+          <div class="section-label-svc">Quick Summary</div>
+          <div class="summary-grid">
+            <div class="summary-mini"><div class="label">Last Completed</div><div class="value" style="font-size:18px">${lastDone[0]?lastDone[0].completed:'—'}</div></div>
+            <div class="summary-mini"><div class="label">Active Engineers</div><div class="value">${new Set(data.map(t=>(t.assigned||'').trim()).filter(n=>n&&n!=='Unassigned')).size}</div></div>
+          </div>
+        </div>
+        <div class="simple-card">
+          <div class="section-label-svc">Products &amp; Invoice</div>
+          <div class="section-h4" style="margin-top:4px">Top products</div>
+          <div class="compact-list">${productBars}</div>
+          <div class="section-h4" style="margin-top:12px">Invoice status</div>
+          <div class="compact-list">${invoiceBars}</div>
+        </div>
+      </div>
+    </div>`;
+
+  // Engineer workload
+  const engCounts={};
+  data.filter(t=>(t.assigned||'').trim()&&t.assigned!=='Unassigned'&&t.status!=='Completed').forEach(t=>{const n=(t.assigned||'').trim();engCounts[n]=(engCounts[n]||0)+1;});
+  const seenEng=new Set();
+  const roster=[];
+  agents.forEach(a=>{if(a.name&&a.name!=='Unassigned'){seenEng.add(a.name);roster.push({name:a.name,role:a.role,count:engCounts[a.name]||0});}});
+  Object.keys(engCounts).forEach(n=>{if(!seenEng.has(n))roster.push({name:n,role:'Engineer',count:engCounts[n]});});
+  document.getElementById('agent-grid-svc').innerHTML=roster.length?roster.map((e,i)=>`
+    <div class="agent-card">
+      <div class="avatar" style="background:${AVATAR_COLORS[i%8]};color:${AVATAR_TEXT[i%8]}">${e.name.split(' ').map(w=>w[0]).join('').slice(0,2)}</div>
+      <div class="an">${escapeHtml(e.name)}</div>
+      <div class="ac">${escapeHtml(e.role||'Engineer')}</div>
+      <div class="ac2">${e.count} open ticket${e.count!==1?'s':''}</div>
+    </div>`).join(''):'<div style="color:#94a3b8;font-size:13px">No engineers assigned yet.</div>';
+}
+
+function renderPartsDash(){
+  const data=visibleParts();
+  const total=data.length;
+  const open=data.filter(p=>!['Delivered','Cancelled'].includes(p.status)).length;
+  const urgentCritical=data.filter(p=>['Urgent','Critical'].includes(p.urgency)&&p.status!=='Delivered'&&p.status!=='Cancelled').length;
+  const done=data.filter(p=>p.status==='Delivered').length;
+
+  document.getElementById('kpi-row-parts').innerHTML=`
+    <div class="kpi kp1"><div class="n">${total}</div><div class="l">Total Requests</div></div>
+    <div class="kpi kp2"><div class="n">${open}</div><div class="l">Open Requests</div><div class="sub" style="color:#0891b2">${total?Math.round(open/total*100):0}% of total</div></div>
+    <div class="kpi kp3"><div class="n">${urgentCritical}</div><div class="l">Critical / Urgent</div>${urgentCritical>0?'<div class="sub" style="color:#d97706">Need attention</div>':''}</div>
+    <div class="kpi kp4"><div class="n">${done}</div><div class="l">Delivered</div><div class="sub" style="color:#16a34a">${total?Math.round(done/total*100):0}% rate</div></div>`;
+
+  const statusCounts={};data.forEach(p=>{const s=p.status||'Requested';statusCounts[s]=(statusCounts[s]||0)+1;});
+  const statusEntries=Object.entries(statusCounts).sort((a,b)=>b[1]-a[1]);
+  const maxS=Math.max(1,...statusEntries.map(x=>x[1]));
+  const statusBars=statusEntries.map(([s,c])=>`<div class="compact-row"><div class="bar-label" title="${s}">${s}</div><div class="bar-track"><div class="bar-fill" style="width:${Math.max(8,Math.round(c/maxS*100))}%;background:${PARTS_STATUS_COLORS[s]||'#cbd5e1'}"></div></div><div class="bar-count">${c}</div></div>`).join('')||'<div style="color:#94a3b8;font-size:13px;padding:20px 0;text-align:center">No parts requests yet — click <strong>+ New Parts Request</strong> to get started.</div>';
+
+  const urgCounts={};data.forEach(p=>{if(p.urgency)urgCounts[p.urgency]=(urgCounts[p.urgency]||0)+1;});
+  const urgColors={Standard:'#94a3b8',Urgent:'#f59e0b',Critical:'#ef4444'};
+  const maxU=Math.max(1,...Object.values(urgCounts));
+  const urgBars=Object.entries(urgCounts).map(([u,c])=>`<div class="compact-row"><div class="bar-label">${u}</div><div class="bar-track"><div class="bar-fill" style="width:${Math.max(8,Math.round(c/maxU*100))}%;background:${urgColors[u]||'#cbd5e1'}"></div></div><div class="bar-count">${c}</div></div>`).join('')||'<div style="color:#94a3b8;font-size:13px">No data yet</div>';
+
+  const totalQuoted=data.filter(p=>p.quotedprice).reduce((s,p)=>s+parseFloat(p.quotedprice||0),0);
+  const avgQty=data.length?Math.round(data.reduce((s,p)=>s+(parseInt(p.qty)||0),0)/data.length):0;
+
+  document.getElementById('charts-row-parts').innerHTML=`
+    <div class="simple-grid">
+      <div class="simple-card">
+        <div class="section-label-parts">Parts Request Status</div>
+        <div class="compact-list">${statusBars}</div>
+        <div class="simple-note">Delivery rate: ${total?Math.round(done/total*100):0}%</div>
+      </div>
+      <div class="simple-stack">
+        <div class="simple-card">
+          <div class="section-label-parts">Quick Summary</div>
+          <div class="summary-grid">
+            <div class="summary-mini"><div class="label">Total Quoted Value</div><div class="value" style="font-size:18px">$${totalQuoted.toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:0})}</div></div>
+            <div class="summary-mini"><div class="label">Avg Qty / Request</div><div class="value">${avgQty}</div></div>
+          </div>
+        </div>
+        <div class="simple-card">
+          <div class="section-label-parts">Urgency Breakdown</div>
+          <div class="compact-list" style="margin-top:4px">${urgBars}</div>
+        </div>
+      </div>
+    </div>`;
+
+  // Parts handler workload
+  const handlerCounts={};
+  data.filter(p=>(p.assigned||'').trim()&&p.assigned!=='Unassigned'&&!['Delivered','Cancelled'].includes(p.status)).forEach(p=>{const n=(p.assigned||'').trim();handlerCounts[n]=(handlerCounts[n]||0)+1;});
+  const seenH=new Set();const rosterH=[];
+  agents.forEach(a=>{if(a.name&&a.name!=='Unassigned'){seenH.add(a.name);rosterH.push({name:a.name,role:a.role,count:handlerCounts[a.name]||0});}});
+  Object.keys(handlerCounts).forEach(n=>{if(!seenH.has(n))rosterH.push({name:n,role:'Handler',count:handlerCounts[n]});});
+  document.getElementById('agent-grid-parts').innerHTML=rosterH.length?rosterH.map((e,i)=>`
+    <div class="agent-card">
+      <div class="avatar" style="background:${AVATAR_COLORS[i%8]};color:${AVATAR_TEXT[i%8]}">${e.name.split(' ').map(w=>w[0]).join('').slice(0,2)}</div>
+      <div class="an">${escapeHtml(e.name)}</div>
+      <div class="ac">${escapeHtml(e.role||'Handler')}</div>
+      <div class="ac2" style="color:#0f766e">${e.count} open request${e.count!==1?'s':''}</div>
+    </div>`).join(''):'<div style="color:#94a3b8;font-size:13px">No handlers assigned yet.</div>';
+}
+
+/* ══════════════════════════════════════════
+   BADGE HELPERS
+══════════════════════════════════════════ */
+function statusBadge(s){const k=SVC_STATUS_KEY[s]||'Unassigned';return `<span class="badge s-${k}">${escapeHtml(s)||'Unassigned'}</span>`;}
+function partsBadge(s){const k=PARTS_STATUS_KEY[s]||'Requested';return `<span class="badge p-${k}">${escapeHtml(s)||'Requested'}</span>`;}
+function urgBadge(u){return `<span class="badge urg-${u||'Standard'}">${escapeHtml(u||'Standard')}</span>`;}
+function invBadge(s){const k=INV_KEY[s];return k?`<span class="badge inv-${k}">${escapeHtml(s)}</span>`:'—';}
+
+const FORD_LOGO_B64='data:image/png;base64,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';
+const CUSTOMER_LOGO_RULES=[
+  {aliases:['ford','ford motor','ford motor company'],logo:FORD_LOGO_B64,alt:'Ford'}
+];
+function getCustomerLogoMarkup(company,size){
+  if(!company)return '';
+  const normalized=company.toLowerCase().trim();
+  const match=CUSTOMER_LOGO_RULES.find(rule=>rule.aliases.some(alias=>normalized.includes(alias)));
+  if(!match)return '';
+  const w=size==='lg'?'120px':'72px';
+  return `<span class="customer-badge${size==='lg'?' lg':''}"><img src="${match.logo}" alt="${match.alt}" style="width:${w};height:auto;display:block;border-radius:3px;object-fit:contain"></span>`;
+}
+function renderCompanyCell(company){
+  const logo=getCustomerLogoMarkup(company);
+  if(logo)return `<div class="customer-cell logo-only">${logo}</div>`;
+  return `<div class="customer-cell"><span class="customer-name">${escapeHtml(company)||'—'}</span></div>`;
+}
+function renderCompanyValue(company){return getCustomerLogoMarkup(company)||`<span>${escapeHtml(company)||'—'}</span>`;}
+function updateCompanyLogoPreview(){
+  const el=document.getElementById('company-logo-preview');if(!el)return;
+  const company=(document.getElementById('f-company')||{}).value||'';
+  const markup=getCustomerLogoMarkup(company,'lg');
+  el.innerHTML=markup||'<span style="font-size:12px;color:#94a3b8">Recognized customer logo will display automatically.</span>';
+}
+function updatePartsLogoPreview(){
+  const el=document.getElementById('p-company-logo-preview');if(!el)return;
+  const company=(document.getElementById('p-company')||{}).value||'';
+  const markup=getCustomerLogoMarkup(company,'lg');
+  el.innerHTML=markup||'<span style="font-size:12px;color:#94a3b8">Recognized customer logo will display automatically.</span>';
+}
+
+/* ══════════════════════════════════════════
+   SERVICE TICKETS
+══════════════════════════════════════════ */
+function filteredTickets(){
+  const q=(document.getElementById('search').value||'').toLowerCase();
+  const st=document.getElementById('f-status-filter').value;
+  const pr=document.getElementById('f-product-filter').value;
+  const ag=document.getElementById('f-agent-filter').value;
+  let result=visibleTickets().filter(t=>{
+    if(q&&!['company','contact','id','jobnum','plant','issue','model'].some(k=>(t[k]||'').toLowerCase().includes(q)))return false;
+    if(st&&t.status!==st)return false;
+    if(pr&&t.product!==pr)return false;
+    if(ag&&t.assigned!==ag)return false;
+    return true;
+  });
+  return result.slice().sort((a,b)=>{
+    const av=(a[svcSortKey]||'').toString().toLowerCase();
+    const bv=(b[svcSortKey]||'').toString().toLowerCase();
+    return av<bv?-svcSortDir:av>bv?svcSortDir:0;
+  });
+}
+
+function renderTable(){
+  const af=document.getElementById('f-agent-filter');const curAg=af.value;
+  af.innerHTML='<option value="">All engineers</option>'+agents.map(a=>`<option ${a.name===curAg?'selected':''}>${escapeHtml(a.name)}</option>`).join('');
+  const rows=filteredTickets();
+  const tbody=document.getElementById('tbody');
+  document.getElementById('empty').style.display=rows.length?'none':'block';
+  if(!rows.length){tbody.innerHTML='';return;}
+  tbody.innerHTML=rows.map(t=>{
+    const i=tickets.indexOf(t);
+    return`<tr>
+      <td style="font-weight:700;color:#1F3864;cursor:pointer" onclick="openDetail(${i})">${escapeHtml(t.id)}</td>
+      <td style="color:#475569;font-size:11px">${escapeHtml(t.jobnum)||'—'}</td>
+      <td>${escapeHtml(t.date)||'—'}</td>
+      <td style="font-weight:500;cursor:pointer" onclick="openDetail(${i})">${renderCompanyCell(t.company)}</td>
+      <td style="color:#64748b">${escapeHtml(t.plant)||'—'}</td>
+      <td>${escapeHtml(t.product)||'—'}</td>
+      <td style="color:#1e293b">${escapeHtml(t.assigned)||'—'}</td>
+      <td>${statusBadge(t.status)}</td>
+      <td>${invBadge(t.invoice)}</td>
+      <td>${escapeHtml(t.completed)||'—'}</td>
+      <td style="white-space:nowrap"><button class="btn sm" onclick="openForm(${i})" style="margin-right:4px">Edit</button><button class="btn sm danger" onclick="delTicket(${i})">Del</button></td>
+    </tr>`;
+  }).join('');
+}
+
+function syncAgentDropdown(id,selected){
+  const sel=document.getElementById(id);
+  sel.innerHTML=agents.map(a=>`<option ${a.name===selected?'selected':''}>${escapeHtml(a.name)}</option>`).join('');
+}
+function buildFuGrid(selected){
+  document.getElementById('fu-grid').innerHTML=FOLLOWUPS.map(f=>`<label class="chk ${selected.includes(f)?'on':''}"><input type="checkbox" value="${f}" ${selected.includes(f)?'checked':''} onchange="this.closest('.chk').classList.toggle('on',this.checked)"> ${f}</label>`).join('');
+}
+function openForm(idx){
+  editIdx=idx!==undefined?idx:null;
+  const t=editIdx!==null?tickets[editIdx]:null;
+  document.getElementById('modal-title').textContent=t?`Edit Ticket — ${t.id}`:'New Service Ticket';
+  document.getElementById('f-id').value=t?t.id:nextSvcId();
+  document.getElementById('f-jobnum').value=t?t.jobnum||'':'';
+  document.getElementById('f-date').value=t?t.date:new Date().toISOString().slice(0,10);
+  document.getElementById('f-company').value=t?t.company||'':'';
+  document.getElementById('f-plant').value=t?t.plant||'':'';
+  document.getElementById('f-contact').value=t?t.contact||'':'';
+  document.getElementById('f-email').value=t?t.email||'':'';
+  document.getElementById('f-phone').value=t?t.phone||'':'';
+  document.getElementById('f-product-form').value=t?t.product||'':'';
+  document.getElementById('f-model').value=t?t.model||'':'';
+  document.getElementById('f-issue').value=t?t.issue||'':'';
+  document.getElementById('f-status-form').value=t?t.status||'Unassigned':'Unassigned';
+  document.getElementById('f-invoice').value=t?t.invoice||'':'';
+  document.getElementById('f-completed').value=t?t.completed||'':'';
+  document.getElementById('f-resolution').value=t?t.resolution||'':'';
+  syncAgentDropdown('f-assigned',t?t.assigned||'Unassigned':'Unassigned');
+  buildFuGrid(t&&t.followup?t.followup:[]);
+  updateCompanyLogoPreview();
+  document.getElementById('overlay').classList.add('show');
+  setTimeout(()=>document.getElementById('f-company').focus(),80);
+}
+function closeForm(){document.getElementById('overlay').classList.remove('show');}
+function saveTicket(){
+  const company=document.getElementById('f-company').value.trim();
+  if(!company){alert('Company name is required.');return;}
+  const fu=Array.from(document.querySelectorAll('#fu-grid input:checked')).map(i=>i.value);
+  const t={
+    id:editIdx!==null?tickets[editIdx].id:document.getElementById('f-id').value,
+    jobnum:document.getElementById('f-jobnum').value.trim(),
+    date:document.getElementById('f-date').value,company,
+    plant:document.getElementById('f-plant').value.trim(),
+    contact:document.getElementById('f-contact').value.trim(),
+    email:document.getElementById('f-email').value.trim(),
+    phone:document.getElementById('f-phone').value.trim(),
+    product:document.getElementById('f-product-form').value,
+    model:document.getElementById('f-model').value.trim(),
+    issue:document.getElementById('f-issue').value.trim(),followup:fu,
+    status:document.getElementById('f-status-form').value,
+    assigned:document.getElementById('f-assigned').value,
+    invoice:document.getElementById('f-invoice').value,
+    completed:document.getElementById('f-completed').value,
+    resolution:document.getElementById('f-resolution').value.trim(),
+  };
+  if(editIdx!==null){tickets[editIdx]=t;}else{tickets.push(t);}
+  save();renderTable();closeForm();
+}
+function delTicket(i){
+  if(confirm(`Delete ticket ${tickets[i].id} (${tickets[i].company})?`)){
+    tickets.splice(i,1);editIdx=null;save();renderTable();closeDetail();
+  }
+}
+function openDetail(i){
+  const t=tickets[i];
+  const fu=t.followup&&t.followup.length?t.followup.map(f=>`<span class="futag">${escapeHtml(f)}</span>`).join(''):'<span style="color:#94a3b8;font-size:13px">None</span>';
+  document.getElementById('dp-title').textContent=t.id;
+  document.getElementById('dp-sub').textContent=[t.jobnum,t.plant].filter(Boolean).join(' · ');
+  const canEdit=isAdmin()||(currentSession()&&(t.assigned||'').toLowerCase()===currentSession().username.toLowerCase());
+  document.getElementById('dpbody').innerHTML=`
+    <div class="dpsec"><h4>Identification</h4>
+      <div class="drow"><span class="k">Ticket #</span><span class="v" style="color:#1F3864;font-weight:700">${escapeHtml(t.id)}</span></div>
+      <div class="drow"><span class="k">Jier Job #</span><span class="v">${escapeHtml(t.jobnum)||'—'}</span></div>
+    </div>
+    <div class="dpsec"><h4>Contact</h4>
+      <div class="drow"><span class="k">Date</span><span class="v">${escapeHtml(t.date)||'—'}</span></div>
+      <div class="drow"><span class="k">Company</span><span class="v" style="display:flex;align-items:center;justify-content:flex-end;gap:8px">${renderCompanyValue(t.company)}</span></div>
+      <div class="drow"><span class="k">Plant</span><span class="v">${escapeHtml(t.plant)||'—'}</span></div>
+      <div class="drow"><span class="k">Contact</span><span class="v">${escapeHtml(t.contact)||'—'}</span></div>
+      <div class="drow"><span class="k">Email</span><span class="v">${escapeHtml(t.email)||'—'}</span></div>
+      <div class="drow"><span class="k">Phone</span><span class="v">${escapeHtml(t.phone)||'—'}</span></div>
+    </div>
+    <div class="dpsec"><h4>Product</h4>
+      <div class="drow"><span class="k">Type</span><span class="v">${escapeHtml(t.product)||'—'}</span></div>
+      <div class="drow"><span class="k">Model / Tonnage</span><span class="v">${escapeHtml(t.model)||'—'}</span></div>
+    </div>
+    <div class="dpsec"><h4>Issue</h4>
+      <div style="font-size:13px;color:#334155;line-height:1.6;padding:8px;background:#f8fafc;border-radius:6px;min-height:44px">${escapeHtml(t.issue)||'—'}</div>
+    </div>
+    <div class="dpsec"><h4>Follow-Up Required</h4><div style="margin-top:4px">${fu}</div></div>
+    <div class="dpsec"><h4>Status &amp; Billing</h4>
+      <div class="drow"><span class="k">Status</span><span class="v">${statusBadge(t.status)}</span></div>
+      <div class="drow"><span class="k">Assigned Engineer</span><span class="v">${escapeHtml(t.assigned)||'—'}</span></div>
+      <div class="drow"><span class="k">Invoice</span><span class="v">${invBadge(t.invoice)}</span></div>
+    </div>
+    <div class="dpsec"><h4>Resolution</h4>
+      <div class="drow"><span class="k">Date Completed</span><span class="v">${escapeHtml(t.completed)||'—'}</span></div>
+      <div style="font-size:13px;color:#334155;line-height:1.6;padding:8px;background:#f8fafc;border-radius:6px;min-height:44px;margin-top:6px">${escapeHtml(t.resolution)||'—'}</div>
+    </div>
+    ${canEdit?`<div style="display:flex;gap:8px;margin-top:14px">
+      <button class="btn primary" style="flex:1" onclick="closeDetail();openForm(${i})">Edit Ticket</button>
+      <button class="btn danger" onclick="delTicket(${i})">Delete</button>
+    </div>`:''}`;
+  document.getElementById('dpover').classList.add('show');
+  document.getElementById('dpanel').style.display='block';
+}
+function closeDetail(){document.getElementById('dpover').classList.remove('show');document.getElementById('dpanel').style.display='none';}
+
+/* ══════════════════════════════════════════
+   PARTS REQUESTS
+══════════════════════════════════════════ */
+function filteredParts(){
+  const q=(document.getElementById('p-search').value||'').toLowerCase();
+  const st=document.getElementById('p-status-filter').value;
+  const urg=document.getElementById('p-urgency-filter').value;
+  const ag=document.getElementById('p-agent-filter').value;
+  let result=visibleParts().filter(p=>{
+    if(q&&!['company','contact','id','partnum','partdesc','equipment','ponum','tracking','email','phone','plant'].some(k=>String(p[k]||'').toLowerCase().includes(q)))return false;
+    if(st&&p.status!==st)return false;
+    if(urg&&p.urgency!==urg)return false;
+    if(ag&&p.assigned!==ag)return false;
+    return true;
+  });
+  return result.slice().sort((a,b)=>{
+    const av=(a[partsSortKey]||'').toString().toLowerCase();
+    const bv=(b[partsSortKey]||'').toString().toLowerCase();
+    return av<bv?-partsSortDir:av>bv?partsSortDir:0;
+  });
+}
+
+function renderPartsTable(){
+  const af=document.getElementById('p-agent-filter');const curAg=af.value;
+  af.innerHTML='<option value="">All handlers</option>'+agents.map(a=>`<option ${a.name===curAg?'selected':''}>${escapeHtml(a.name)}</option>`).join('');
+  const rows=filteredParts();
+  const tbody=document.getElementById('ptbody');
+  document.getElementById('p-empty').style.display=rows.length?'none':'block';
+  if(!rows.length){tbody.innerHTML='';return;}
+  tbody.innerHTML=rows.map(p=>{
+    const i=parts.indexOf(p);
+    const price=p.quotedprice?'$'+parseFloat(p.quotedprice).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}):'—';
+    return`<tr>
+      <td style="font-weight:700;color:#0f766e;cursor:pointer" onclick="openPartsDetail(${i})">${escapeHtml(p.id)}</td>
+      <td>${escapeHtml(p.date)||'—'}</td>
+      <td style="cursor:pointer" onclick="openPartsDetail(${i})">${renderCompanyCell(p.company)}</td>
+      <td style="color:#64748b">${escapeHtml(p.contact)||'—'}</td>
+      <td style="color:#475569">${escapeHtml(p.equipment)||'—'}</td>
+      <td style="font-family:monospace;font-size:11px">${escapeHtml(p.partnum)||'—'}</td>
+      <td style="text-align:center;font-weight:700">${escapeHtml(String(p.qty||''))||'—'}</td>
+      <td>${urgBadge(p.urgency)}</td>
+      <td>${escapeHtml(p.assigned)||'—'}</td>
+      <td>${partsBadge(p.status)}</td>
+      <td style="font-weight:600;color:#0f766e">${price}</td>
+      <td style="white-space:nowrap"><button class="btn sm" onclick="openPartsForm(${i})" style="margin-right:4px">Edit</button><button class="btn sm danger" onclick="delParts(${i})">Del</button></td>
+    </tr>`;
+  }).join('');
+}
+
+function openPartsForm(idx){
+  editPartsIdx=idx!==undefined?idx:null;
+  const p=editPartsIdx!==null?parts[editPartsIdx]:null;
+  document.getElementById('p-modal-title').textContent=p?`Edit Request — ${p.id}`:'New Parts Request';
+  document.getElementById('p-id').value=p?p.id:nextPartsId();
+  document.getElementById('p-date').value=p?p.date:new Date().toISOString().slice(0,10);
+  document.getElementById('p-company').value=p?p.company||'':'';
+  document.getElementById('p-plant').value=p?p.plant||'':'';
+  document.getElementById('p-contact').value=p?p.contact||'':'';
+  document.getElementById('p-email').value=p?p.email||'':'';
+  document.getElementById('p-phone').value=p?p.phone||'':'';
+  document.getElementById('p-equipment').value=p?p.equipment||'':'';
+  document.getElementById('p-partnum').value=p?p.partnum||'':'';
+  document.getElementById('p-qty').value=p?p.qty||'':'';
+  document.getElementById('p-partdesc').value=p?p.partdesc||'':'';
+  document.getElementById('p-notes').value=p?p.notes||'':'';
+  document.getElementById('p-urgency').value=p?p.urgency||'Standard':'Standard';
+  document.getElementById('p-status-form').value=p?p.status||'Requested':'Requested';
+  document.getElementById('p-quotedprice').value=p?p.quotedprice||'':'';
+  document.getElementById('p-ponum').value=p?p.ponum||'':'';
+  document.getElementById('p-tracking').value=p?p.tracking||'':'';
+  document.getElementById('p-shipdate').value=p?p.shipdate||'':'';
+  document.getElementById('p-deliverydate').value=p?p.deliverydate||'':'';
+  syncAgentDropdown('p-assigned',p?p.assigned||'Unassigned':'Unassigned');
+  updatePartsLogoPreview();
+  document.getElementById('p-overlay').classList.add('show');
+  setTimeout(()=>document.getElementById('p-company').focus(),80);
+}
+function closePartsForm(){document.getElementById('p-overlay').classList.remove('show');}
+function savePartsRequest(){
+  const company=document.getElementById('p-company').value.trim();
+  const partdesc=document.getElementById('p-partdesc').value.trim();
+  const qty=document.getElementById('p-qty').value;
+  if(!company){alert('Company name is required.');return;}
+  if(!partdesc){alert('Part description is required.');return;}
+  if(!qty||parseInt(qty)<1){alert('Quantity must be at least 1.');return;}
+  const p={
+    id:editPartsIdx!==null?parts[editPartsIdx].id:document.getElementById('p-id').value,
+    date:document.getElementById('p-date').value,company,
+    plant:document.getElementById('p-plant').value.trim(),
+    contact:document.getElementById('p-contact').value.trim(),
+    email:document.getElementById('p-email').value.trim(),
+    phone:document.getElementById('p-phone').value.trim(),
+    equipment:document.getElementById('p-equipment').value.trim(),
+    partnum:document.getElementById('p-partnum').value.trim(),
+    qty:document.getElementById('p-qty').value,
+    partdesc,notes:document.getElementById('p-notes').value.trim(),
+    urgency:document.getElementById('p-urgency').value,
+    assigned:document.getElementById('p-assigned').value,
+    status:document.getElementById('p-status-form').value,
+    quotedprice:document.getElementById('p-quotedprice').value,
+    ponum:document.getElementById('p-ponum').value.trim(),
+    tracking:document.getElementById('p-tracking').value.trim(),
+    shipdate:document.getElementById('p-shipdate').value,
+    deliverydate:document.getElementById('p-deliverydate').value,
+  };
+  if(editPartsIdx!==null){parts[editPartsIdx]=p;}else{parts.push(p);}
+  saveParts();renderPartsTable();closePartsForm();
+}
+function delParts(i){
+  if(confirm(`Delete request ${parts[i].id} (${parts[i].company})?`)){
+    parts.splice(i,1);editPartsIdx=null;saveParts();renderPartsTable();closePartsDetail();
+  }
+}
+function openPartsDetail(i){
+  const p=parts[i];
+  const price=p.quotedprice?'$'+parseFloat(p.quotedprice).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}):'—';
+  document.getElementById('p-dp-title').textContent=p.id;
+  document.getElementById('p-dp-sub').textContent=[p.equipment,p.company].filter(Boolean).join(' · ');
+  const canEdit=isAdmin()||(currentSession()&&(p.assigned||'').toLowerCase()===currentSession().username.toLowerCase());
+  document.getElementById('p-dpbody').innerHTML=`
+    <div class="dpsec"><h4 class="teal-h4">Request Info</h4>
+      <div class="drow"><span class="k">Request #</span><span class="v" style="color:#0f766e;font-weight:700">${escapeHtml(p.id)}</span></div>
+      <div class="drow"><span class="k">Date</span><span class="v">${escapeHtml(p.date)||'—'}</span></div>
+      <div class="drow"><span class="k">Urgency</span><span class="v">${urgBadge(p.urgency)}</span></div>
+    </div>
+    <div class="dpsec"><h4 class="teal-h4">Customer</h4>
+      <div class="drow"><span class="k">Company</span><span class="v" style="display:flex;align-items:center;justify-content:flex-end;gap:8px">${renderCompanyValue(p.company)}</span></div>
+      <div class="drow"><span class="k">Plant</span><span class="v">${escapeHtml(p.plant)||'—'}</span></div>
+      <div class="drow"><span class="k">Contact</span><span class="v">${escapeHtml(p.contact)||'—'}</span></div>
+      <div class="drow"><span class="k">Email</span><span class="v">${escapeHtml(p.email)||'—'}</span></div>
+      <div class="drow"><span class="k">Phone</span><span class="v">${escapeHtml(p.phone)||'—'}</span></div>
+      <div class="drow"><span class="k">Equipment</span><span class="v">${escapeHtml(p.equipment)||'—'}</span></div>
+    </div>
+    <div class="dpsec"><h4 class="teal-h4">Part Details</h4>
+      <div class="drow"><span class="k">Part Number</span><span class="v" style="font-family:monospace">${escapeHtml(p.partnum)||'—'}</span></div>
+      <div class="drow"><span class="k">Quantity</span><span class="v font-weight:700">${escapeHtml(String(p.qty||''))||'—'}</span></div>
+      <div class="drow"><span class="k">Description</span><span class="v" style="max-width:55%;text-align:right;white-space:normal">${escapeHtml(p.partdesc)||'—'}</span></div>
+      ${p.notes?`<div style="font-size:13px;color:#334155;line-height:1.6;padding:8px;background:#f0fdf9;border-radius:6px;margin-top:6px">${escapeHtml(p.notes)}</div>`:''}
+    </div>
+    <div class="dpsec"><h4 class="teal-h4">Status &amp; Fulfillment</h4>
+      <div class="drow"><span class="k">Status</span><span class="v">${partsBadge(p.status)}</span></div>
+      <div class="drow"><span class="k">Handler</span><span class="v">${escapeHtml(p.assigned)||'—'}</span></div>
+      <div class="drow"><span class="k">Quoted Price</span><span class="v" style="font-weight:700;color:#0f766e">${price}</span></div>
+      <div class="drow"><span class="k">PO Number</span><span class="v">${escapeHtml(p.ponum)||'—'}</span></div>
+      <div class="drow"><span class="k">Tracking #</span><span class="v">${escapeHtml(p.tracking)||'—'}</span></div>
+      <div class="drow"><span class="k">Ship Date</span><span class="v">${escapeHtml(p.shipdate)||'—'}</span></div>
+      <div class="drow"><span class="k">Delivery Date</span><span class="v">${escapeHtml(p.deliverydate)||'—'}</span></div>
+    </div>
+    ${canEdit?`<div style="display:flex;gap:8px;margin-top:14px">
+      <button class="btn teal" style="flex:1" onclick="closePartsDetail();openPartsForm(${i})">Edit Request</button>
+      <button class="btn danger" onclick="delParts(${i})">Delete</button>
+    </div>`:''}`;
+  document.getElementById('p-dpover').classList.add('show');
+  document.getElementById('p-dpanel').style.display='block';
+}
+function closePartsDetail(){document.getElementById('p-dpover').classList.remove('show');document.getElementById('p-dpanel').style.display='none';}
+
+/* ══════════════════════════════════════════
+   SETTINGS
+══════════════════════════════════════════ */
+function renderSettings(){
+  renderUsers();
+  document.getElementById('agent-list').innerHTML=agents.map((a,i)=>`
+    <div class="agent-row">
+      <div class="aname">${escapeHtml(a.name)}</div>
+      <div class="arole">${escapeHtml(a.role||'')}</div>
+      ${a.name!=='Unassigned'?`<button class="btn sm danger" onclick="removeAgent(${i})">Remove</button>`:'<span style="font-size:11px;color:#94a3b8">default</span>'}
+    </div>`).join('');
+}
+function addAgent(){
+  const name=document.getElementById('new-agent-name').value.trim();
+  if(!name){alert('Please enter a name.');return;}
+  if(agents.find(a=>a.name.toLowerCase()===name.toLowerCase())){alert('Engineer already exists.');return;}
+  const role=document.getElementById('new-agent-role').value.trim();
+  agents.push({name,role});saveAgents();
+  document.getElementById('new-agent-name').value='';document.getElementById('new-agent-role').value='';
+  renderSettings();
+}
+function removeAgent(i){
+  if(!confirm(`Remove "${agents[i].name}"?`))return;
+  agents.splice(i,1);saveAgents();renderSettings();
+}
+
+/* ══════════════════════════════════════════
+   EXPORT
+══════════════════════════════════════════ */
+function exportActiveCSV(){
+  if(currentPage==='parts'){
+    const data=filteredParts();
+    if(!data.length){alert('No parts requests to export.');return;}
+    const hdr=['Request #','Date','Company','Plant','Contact','Email','Phone','Equipment','Part Number','Qty','Description','Notes','Urgency','Handler','Status','Quoted Price','PO Number','Tracking','Ship Date','Delivery Date'];
+    const rows=data.map(p=>[p.id,p.date,p.company,p.plant,p.contact,p.email,p.phone,p.equipment,p.partnum,p.qty,p.partdesc,p.notes,p.urgency,p.assigned,p.status,p.quotedprice,p.ponum,p.tracking,p.shipdate,p.deliverydate].map(v=>`"${(v||'').toString().replace(/"/g,'""')}"`));
+    const csv=[hdr,...rows].map(r=>r.join(',')).join('\n');
+    const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv);a.download='parts_requests.csv';a.click();
+  } else {
+    const data=filteredTickets();
+    if(!data.length){alert('No tickets to export.');return;}
+    const hdr=['Ticket #','Jier Job #','Date','Company','Plant Location','Contact','Email','Phone','Product','Model','Issue','Follow-up','Status','Assigned Engineer','Invoice Status','Completed','Resolution'];
+    const rows=data.map(t=>[t.id,t.jobnum,t.date,t.company,t.plant,t.contact,t.email,t.phone,t.product,t.model,t.issue,(t.followup||[]).join('; '),t.status,t.assigned,t.invoice,t.completed,t.resolution].map(v=>`"${(v||'').replace(/"/g,'""')}"`));
+    const csv=[hdr,...rows].map(r=>r.join(',')).join('\n');
+    const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv);a.download='service_tickets.csv';a.click();
+  }
+}
+
+/* ══════════════════════════════════════════
+   KEYBOARD
+══════════════════════════════════════════ */
+document.addEventListener('keydown',function(e){
+  if(e.key==='Escape'){
+    if(document.getElementById('overlay').classList.contains('show'))closeForm();
+    else if(document.getElementById('p-overlay').classList.contains('show'))closePartsForm();
+    else if(document.getElementById('dpover').classList.contains('show'))closeDetail();
+    else if(document.getElementById('p-dpover').classList.contains('show'))closePartsDetail();
+    return;
+  }
+  if(e.key==='Tab'){
+    const activeOverlay=document.getElementById('overlay').classList.contains('show')?document.getElementById('overlay'):
+      document.getElementById('p-overlay').classList.contains('show')?document.getElementById('p-overlay'):null;
+    if(!activeOverlay)return;
+    const modal=activeOverlay.querySelector('.modal');
+    const focusable=Array.from(modal.querySelectorAll('button,input,select,textarea')).filter(el=>!el.disabled&&el.offsetParent!==null);
+    if(!focusable.length)return;
+    const first=focusable[0],last=focusable[focusable.length-1];
+    if(e.shiftKey){if(document.activeElement===first){e.preventDefault();last.focus();}}
+    else{if(document.activeElement===last){e.preventDefault();first.focus();}}
+  }
+});
+
+/* ══════════════════════════════════════════
+   INIT
+══════════════════════════════════════════ */
+function initApp(){
+  updateNavUser();
+  // Hide settings nav tab for non-admins
+  const settingsTab=document.querySelectorAll('.nav-tab')[3];
+  if(settingsTab)settingsTab.style.display=isAdmin()?'':'none';
+  renderDash();
+}
+
+window.addEventListener('load',()=>{
+  if(currentSession()){
+    document.getElementById('login-screen').classList.remove('show');
+    initApp();
+  } else {
+    document.getElementById('login-screen').classList.add('show');
+    setTimeout(()=>document.getElementById('login-username').focus(),80);
+  }
+});
+
+// App started via window.load → initApp()
+</script>
+</body>
+</html>
