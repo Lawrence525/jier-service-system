@@ -11,130 +11,112 @@ const DATA_DIR = path.join(__dirname, 'data');
 const USERS_FILE = path.join(DATA_DIR, 'users.json');
 const TICKETS_FILE = path.join(DATA_DIR, 'tickets.json');
 const PARTS_FILE = path.join(DATA_DIR, 'parts.json');
+const AGENTS_FILE = path.join(DATA_DIR, 'agents.json');
 
-// 初始化数据文件（原生fs实现，无需第三方依赖）
+// 初始化数据
 function initData() {
-  return new Promise((resolve, reject) => {
-    // 确保data文件夹存在
-    if (!fs.existsSync(DATA_DIR)) {
-      fs.mkdirSync(DATA_DIR, { recursive: true });
+  if (!fs.existsSync(DATA_DIR)) {
+    fs.mkdirSync(DATA_DIR, { recursive: true });
+  }
+
+  const initFile = (file) => {
+    if (!fs.existsSync(file)) {
+      fs.writeFileSync(file, '[]', 'utf8');
     }
-    // 初始化空JSON文件
-    const initFile = (filePath) => {
-      if (!fs.existsSync(filePath)) {
-        fs.writeFileSync(filePath, '[]', 'utf8');
-      }
-    };
-    initFile(USERS_FILE);
-    initFile(TICKETS_FILE);
-    initFile(PARTS_FILE);
-    console.log('✅ 数据文件初始化完成');
-    resolve();
-  });
+  };
+
+  initFile(USERS_FILE);
+  initFile(TICKETS_FILE);
+  initFile(PARTS_FILE);
+  initFile(AGENTS_FILE);
+
+  console.log('✅ 数据文件初始化完成');
 }
 
-// 通用JSON读写工具（原生fs）
-const readJson = (filePath) => {
-  return new Promise((resolve, reject) => {
-    fs.readFile(filePath, 'utf8', (err, data) => {
-      if (err) return reject(err);
-      try {
-        resolve(JSON.parse(data));
-      } catch (e) {
-        reject(e);
-      }
-    });
-  });
-};
+// 读写 JSON
+const readJson = (file) =>
+  JSON.parse(fs.readFileSync(file, 'utf8') || '[]');
 
-const writeJson = (filePath, data) => {
-  return new Promise((resolve, reject) => {
-    fs.writeFile(filePath, JSON.stringify(data, null, 2), 'utf8', (err) => {
-      if (err) return reject(err);
-      resolve();
-    });
-  });
-};
+const writeJson = (file, data) =>
+  fs.writeFileSync(file, JSON.stringify(data, null, 2));
 
 // 中间件
 app.use(cors());
 app.use(express.json());
 app.use(express.static(__dirname));
 
-// ==================== 用户接口 ====================
-app.get('/api/users', async (req, res) => {
-  try {
-    const data = await readJson(USERS_FILE);
-    res.json(data);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+// 首页
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-app.post('/api/users', async (req, res) => {
-  try {
-    await writeJson(USERS_FILE, req.body);
-    res.json({ success: true });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+// 健康检查
+app.get('/api/health', (req, res) => {
+  res.json({ ok: true });
 });
 
-app.delete('/api/users/:id', async (req, res) => {
-  try {
-    const users = await readJson(USERS_FILE);
-    const filtered = users.filter(u => u.id !== parseInt(req.params.id));
-    await writeJson(USERS_FILE, filtered);
-    res.json({ success: true });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+
+// ================= USERS =================
+app.get('/api/users', (req, res) => {
+  res.json(readJson(USERS_FILE));
 });
 
-// ==================== 工单接口 ====================
-app.get('/api/tickets', async (req, res) => {
-  try {
-    const data = await readJson(TICKETS_FILE);
-    res.json(data);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+app.post('/api/users', (req, res) => {
+  writeJson(USERS_FILE, req.body);
+  res.json({ success: true });
 });
 
-app.post('/api/tickets', async (req, res) => {
-  try {
-    await writeJson(TICKETS_FILE, req.body);
-    res.json({ success: true });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+app.delete('/api/users/:id', (req, res) => {
+  const users = readJson(USERS_FILE);
+  const filtered = users.filter(u => u.id != req.params.id);
+  writeJson(USERS_FILE, filtered);
+  res.json({ success: true });
 });
 
-// ==================== 零件接口 ====================
-app.get('/api/parts', async (req, res) => {
-  try {
-    const data = await readJson(PARTS_FILE);
-    res.json(data);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+
+// ================= AGENTS =================
+app.get('/api/agents', (req, res) => {
+  res.json(readJson(AGENTS_FILE));
 });
 
-app.post('/api/parts', async (req, res) => {
-  try {
-    await writeJson(PARTS_FILE, req.body);
-    res.json({ success: true });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+app.post('/api/agents', (req, res) => {
+  writeJson(AGENTS_FILE, req.body);
+  res.json({ success: true });
 });
 
-// 启动服务
-initData().then(() => {
-  app.listen(PORT, () => {
-    console.log(`✅ 服务启动成功，端口：${PORT}`);
-    console.log(`🌐 访问地址：https://jier-service-system.onrender.com`);
-  });
-}).catch(err => {
-  console.error('❌ 初始化失败:', err);
+app.delete('/api/agents/:id', (req, res) => {
+  const agents = readJson(AGENTS_FILE);
+  const filtered = agents.filter(a => a.id != req.params.id);
+  writeJson(AGENTS_FILE, filtered);
+  res.json({ success: true });
+});
+
+
+// ================= TICKETS =================
+app.get('/api/tickets', (req, res) => {
+  res.json(readJson(TICKETS_FILE));
+});
+
+app.post('/api/tickets', (req, res) => {
+  writeJson(TICKETS_FILE, req.body);
+  res.json({ success: true });
+});
+
+
+// ================= PARTS =================
+app.get('/api/parts', (req, res) => {
+  res.json(readJson(PARTS_FILE));
+});
+
+app.post('/api/parts', (req, res) => {
+  writeJson(PARTS_FILE, req.body);
+  res.json({ success: true });
+});
+
+
+// 启动
+initData();
+
+app.listen(PORT, () => {
+  console.log(`✅ 服务启动成功，端口：${PORT}`);
 });
