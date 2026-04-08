@@ -603,35 +603,147 @@ tr:hover td{background:#f8fafc}
 ══════════════════════════════════════════ */
 const USERS_KEY='svc_users';
 const SESSION_KEY='svc_session';
+const API_BASE='';
+
+let usersCache=[];
 
 function hashSimple(str){let h=0;for(let i=0;i<str.length;i++){h=((h<<5)-h)+str.charCodeAt(i);h|=0;}return h.toString(36);}
-function loadUsers(){try{return JSON.parse(localStorage.getItem(USERS_KEY)||'[]');}catch(e){return [];}}
-function saveUsers(list){localStorage.setItem(USERS_KEY,JSON.stringify(list));}
+function loadUsersLocal(){try{return JSON.parse(localStorage.getItem(USERS_KEY)||'[]');}catch(e){return [];}}
+function saveUsersLocal(list){localStorage.setItem(USERS_KEY,JSON.stringify(list));}
 function currentSession(){try{return JSON.parse(sessionStorage.getItem(SESSION_KEY)||'null');}catch(e){return null;}}
 function isAdmin(){const s=currentSession();return s&&s.role==='admin';}
 
-function doLogin(){
+async function apiGet(url,fallback){
+  try{
+    const res=await fetch(API_BASE+url,{cache:'no-store'});
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    return await res.json();
+  }catch(err){
+    console.warn('GET failed for',url,err);
+    return fallback;
+  }
+}
+async function apiPost(url,data){
+  const res=await fetch(API_BASE+url,{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify(data)
+  });
+  if(!res.ok){
+    const text=await res.text().catch(()=>res.statusText);
+    throw new Error(text||('HTTP '+res.status));
+  }
+  return res.json().catch(()=>({success:true}));
+}
+function getLocalTickets(){
+  return normalizeTickets(firstValidArray(['svc_t4','svc_tickets']));
+}
+function getLocalParts(){
+  return normalizeParts(safeParse(localStorage.getItem('svc_parts')||'[]'));
+}
+function getLocalAgents(){
+  return normalizeEngineers(firstValidArray(['svc_engineers','svc_agents']));
+}
+async function loadUsers(){
+  const local=loadUsersLocal();
+  let remote=await apiGet('/api/users', local);
+  if(!Array.isArray(remote)) remote=[];
+  if(!remote.length && local.length){
+    try{await apiPost('/api/users', local);remote=local;}catch(e){console.warn('User migration skipped',e);}
+  }
+  usersCache=remote;
+  saveUsersLocal(usersCache);
+  return usersCache;
+}
+async function persistUsers(list){
+  usersCache=Array.isArray(list)?list:[];
+  saveUsersLocal(usersCache);
+  await apiPost('/api/users', usersCache);
+}
+async function loadTicketsFromServer(){
+  const local=getLocalTickets();
+  let remote=await apiGet('/api/tickets', local);
+  remote=normalizeTickets(remote);
+  if(!remote.length && local.length){
+    try{await apiPost('/api/tickets', local);remote=local;}catch(e){console.warn('Ticket migration skipped',e);}
+  }
+  tickets=remote;
+  localStorage.setItem('svc_t4',JSON.stringify(tickets));
+  return tickets;
+}
+async function persistTickets(){
+  localStorage.setItem('svc_t4',JSON.stringify(tickets));
+  await apiPost('/api/tickets', tickets);
+}
+async function loadPartsFromServer(){
+  const local=getLocalParts();
+  let remote=await apiGet('/api/parts', local);
+  remote=normalizeParts(remote);
+  if(!remote.length && local.length){
+    try{await apiPost('/api/parts', local);remote=local;}catch(e){console.warn('Parts migration skipped',e);}
+  }
+  parts=remote;
+  localStorage.setItem('svc_parts',JSON.stringify(parts));
+  return parts;
+}
+async function persistParts(){
+  localStorage.setItem('svc_parts',JSON.stringify(parts));
+  await apiPost('/api/parts', parts);
+}
+async function loadAgentsFromServer(){
+  const local=getLocalAgents();
+  let remote=await apiGet('/api/agents', local);
+  remote=normalizeEngineers(remote);
+  if(!remote.length && local.length){
+    try{await apiPost('/api/agents', local);remote=local;}catch(e){console.warn('Agents migration skipped',e);}
+  }
+  if(!remote.length){
+    remote=[{name:'Unassigned',role:''}];
+    try{await apiPost('/api/agents', remote);}catch(e){console.warn('Default agents seed skipped',e);}
+  }
+  agents=remote;
+  localStorage.setItem('svc_engineers',JSON.stringify(agents));
+  return agents;
+}
+async function persistAgents(){
+  agents=normalizeEngineers(agents);
+  if(!agents.find(a=>a.name==='Unassigned')) agents.unshift({name:'Unassigned',role:''});
+  localStorage.setItem('svc_engineers',JSON.stringify(agents));
+  await apiPost('/api/agents', agents);
+}
+
+async function doLogin(){
   const uname=document.getElementById('login-username').value.trim();
   const pw=document.getElementById('login-password').value;
   const err=document.getElementById('login-error');
   if(!uname||!pw){err.textContent='Please enter username and password.';err.classList.add('show');return;}
-  const users=loadUsers();
-  if(!users.length){
-    const firstUser={username:uname,pwHash:hashSimple(pw),role:'admin'};
-    saveUsers([firstUser]);
+  const btn=document.querySelector('.btn-login');
+  btn.disabled=true;
+  try{
+    const users=await loadUsers();
+    if(!users.length){
+      const firstUser={id:Date.now(),username:uname,pwHash:hashSimple(pw),role:'admin'};
+      await persistUsers([firstUser]);
+      err.classList.remove('show');
+      sessionStorage.setItem(SESSION_KEY,JSON.stringify({username:firstUser.username,role:firstUser.role}));
+      document.getElementById('login-screen').classList.remove('show');
+      await initApp();
+      setTimeout(()=>alert('First admin account created.'),60);
+      return;
+    }
+    const user=users.find(u=>u.username&&u.username.toLowerCase()===uname.toLowerCase()&&u.pwHash===hashSimple(pw));
+    if(!user){err.textContent='Incorrect username or password.';err.classList.add('show');document.getElementById('login-password').value='';return;}
     err.classList.remove('show');
-    sessionStorage.setItem(SESSION_KEY,JSON.stringify({username:firstUser.username,role:firstUser.role}));
+    sessionStorage.setItem(SESSION_KEY,JSON.stringify({username:user.username,role:user.role}));
     document.getElementById('login-screen').classList.remove('show');
-    initApp();
-    setTimeout(()=>alert('First admin account created.'),60);
-    return;
+    await initApp();
+  }catch(e){
+    console.error(e);
+    err.textContent='Unable to reach the server. Please try again.';
+    err.classList.add('show');
+  }finally{
+    btn.disabled=false;
   }
-  const user=users.find(u=>u.username.toLowerCase()===uname.toLowerCase()&&u.pwHash===hashSimple(pw));
-  if(!user){err.textContent='Incorrect username or password.';err.classList.add('show');document.getElementById('login-password').value='';return;}
-  err.classList.remove('show');
-  sessionStorage.setItem(SESSION_KEY,JSON.stringify({username:user.username,role:user.role}));
-  document.getElementById('login-screen').classList.remove('show');
-  initApp();
 }
 function doLogout(){
   if(!confirm('Sign out?'))return;
@@ -658,7 +770,7 @@ function renderUsers(){
   const card=document.getElementById('user-mgmt-card');
   if(!isAdmin()){card.style.display='none';return;}
   card.style.display='';
-  const users=loadUsers();const me=currentSession();
+  const users=usersCache;const me=currentSession();
   document.getElementById('user-list').innerHTML=users.map((u,i)=>`
     <div class="user-row">
       <div class="uname">${escapeHtml(u.username)}</div>
@@ -668,24 +780,27 @@ function renderUsers(){
         :`<button class="btn sm danger" onclick="removeUser(${i})">Remove</button>`}
     </div>`).join('');
 }
-function addUser(){
+async function addUser(){
   if(!isAdmin()){alert('Only admins can add users.');return;}
   const name=document.getElementById('new-user-name').value.trim();
   const pw=document.getElementById('new-user-pw').value;
   const role=document.getElementById('new-user-role').value;
   if(!name||!pw){alert('Username and password are required.');return;}
-  const users=loadUsers();
-  if(users.find(u=>u.username.toLowerCase()===name.toLowerCase())){alert('Username already exists.');return;}
-  users.push({username:name,pwHash:hashSimple(pw),role});saveUsers(users);
+  const users=[...usersCache];
+  if(users.find(u=>u.username&&u.username.toLowerCase()===name.toLowerCase())){alert('Username already exists.');return;}
+  users.push({id:Date.now(),username:name,pwHash:hashSimple(pw),role});
+  try{await persistUsers(users);}catch(e){alert('Failed to save user.');return;}
   document.getElementById('new-user-name').value='';document.getElementById('new-user-pw').value='';
   renderUsers();
 }
-function removeUser(i){
+async function removeUser(i){
   if(!isAdmin())return;
-  const users=loadUsers();const me=currentSession();
+  const users=[...usersCache];const me=currentSession();
   if(users[i].username.toLowerCase()===me.username.toLowerCase()){alert('You cannot remove your own account.');return;}
   if(!confirm(`Remove user "${users[i].username}"?`))return;
-  users.splice(i,1);saveUsers(users);renderUsers();
+  users.splice(i,1);
+  try{await persistUsers(users);}catch(e){alert('Failed to remove user.');return;}
+  renderUsers();
 }
 
 /* ══════════════════════════════════════════
@@ -751,21 +866,20 @@ function normalizeEngineers(list){
   return list.map(a=>({name:(a.name||'').trim(),role:(a.role||'Engineer').trim()})).filter(a=>a.name);
 }
 
-let tickets=normalizeTickets(firstValidArray(['svc_t4','svc_tickets']));
-let parts=normalizeParts(safeParse(localStorage.getItem('svc_parts')||'[]'));
-let agents=normalizeEngineers(firstValidArray(['svc_engineers','svc_agents']));
+let tickets=getLocalTickets();
+let parts=getLocalParts();
+let agents=getLocalAgents();
 let editIdx=null,editPartsIdx=null;
 let currentPage='dashboard';
 let activeDashTab='svc';
 
 if(!agents.length){
-  agents=[{name:'Unassigned',role:''},{name:'John Smith',role:'Field Engineer'},{name:'Sarah Lee',role:'Technical Support'}];
-  saveAgents();
+  agents=[{name:'Unassigned',role:''}];
 }
 
-function save(){localStorage.setItem('svc_t4',JSON.stringify(tickets));}
-function saveParts(){localStorage.setItem('svc_parts',JSON.stringify(parts));}
-function saveAgents(){localStorage.setItem('svc_engineers',JSON.stringify(agents));}
+async function save(){await persistTickets();}
+async function saveParts(){await persistParts();}
+async function saveAgents(){await persistAgents();}
 function nextSvcId(){const nums=tickets.map(t=>parseInt((t.id||'T000').replace(/\D/g,''))||0);return 'T'+String((nums.length?Math.max(...nums):0)+1).padStart(3,'0');}
 function nextPartsId(){const nums=parts.map(p=>parseInt((p.id||'P000').replace(/\D/g,''))||0);return 'P'+String((nums.length?Math.max(...nums):0)+1).padStart(3,'0');}
 
@@ -1096,7 +1210,7 @@ function openForm(idx){
   setTimeout(()=>document.getElementById('f-company').focus(),80);
 }
 function closeForm(){document.getElementById('overlay').classList.remove('show');}
-function saveTicket(){
+async function saveTicket(){
   const company=document.getElementById('f-company').value.trim();
   if(!company){alert('Company name is required.');return;}
   const fu=Array.from(document.querySelectorAll('#fu-grid input:checked')).map(i=>i.value);
@@ -1118,11 +1232,14 @@ function saveTicket(){
     resolution:document.getElementById('f-resolution').value.trim(),
   };
   if(editIdx!==null){tickets[editIdx]=t;}else{tickets.push(t);}
-  save();renderTable();closeForm();
+  try{await save();}catch(e){alert('Failed to save ticket to the server.');return;}
+  renderTable();closeForm();
 }
-function delTicket(i){
+async function delTicket(i){
   if(confirm(`Delete ticket ${tickets[i].id} (${tickets[i].company})?`)){
-    tickets.splice(i,1);editIdx=null;save();renderTable();closeDetail();
+    tickets.splice(i,1);editIdx=null;
+    try{await save();}catch(e){alert('Failed to delete ticket on the server.');return;}
+    renderTable();closeDetail();
   }
 }
 function openDetail(i){
@@ -1248,7 +1365,7 @@ function openPartsForm(idx){
   setTimeout(()=>document.getElementById('p-company').focus(),80);
 }
 function closePartsForm(){document.getElementById('p-overlay').classList.remove('show');}
-function savePartsRequest(){
+async function savePartsRequest(){
   const company=document.getElementById('p-company').value.trim();
   const partdesc=document.getElementById('p-partdesc').value.trim();
   const qty=document.getElementById('p-qty').value;
@@ -1276,11 +1393,14 @@ function savePartsRequest(){
     deliverydate:document.getElementById('p-deliverydate').value,
   };
   if(editPartsIdx!==null){parts[editPartsIdx]=p;}else{parts.push(p);}
-  saveParts();renderPartsTable();closePartsForm();
+  try{await saveParts();}catch(e){alert('Failed to save parts request to the server.');return;}
+  renderPartsTable();closePartsForm();
 }
-function delParts(i){
+async function delParts(i){
   if(confirm(`Delete request ${parts[i].id} (${parts[i].company})?`)){
-    parts.splice(i,1);editPartsIdx=null;saveParts();renderPartsTable();closePartsDetail();
+    parts.splice(i,1);editPartsIdx=null;
+    try{await saveParts();}catch(e){alert('Failed to delete parts request on the server.');return;}
+    renderPartsTable();closePartsDetail();
   }
 }
 function openPartsDetail(i){
@@ -1339,18 +1459,27 @@ function renderSettings(){
       ${a.name!=='Unassigned'?`<button class="btn sm danger" onclick="removeAgent(${i})">Remove</button>`:'<span style="font-size:11px;color:#94a3b8">default</span>'}
     </div>`).join('');
 }
-function addAgent(){
+async function addAgent(){
   const name=document.getElementById('new-agent-name').value.trim();
   if(!name){alert('Please enter a name.');return;}
   if(agents.find(a=>a.name.toLowerCase()===name.toLowerCase())){alert('Engineer already exists.');return;}
   const role=document.getElementById('new-agent-role').value.trim();
-  agents.push({name,role});saveAgents();
+  agents.push({name,role});
+  await saveAgents();
   document.getElementById('new-agent-name').value='';document.getElementById('new-agent-role').value='';
   renderSettings();
+  renderDash();
+  renderTable();
+  renderPartsTable();
 }
-function removeAgent(i){
+async function removeAgent(i){
   if(!confirm(`Remove "${agents[i].name}"?`))return;
-  agents.splice(i,1);saveAgents();renderSettings();
+  agents.splice(i,1);
+  await saveAgents();
+  renderSettings();
+  renderDash();
+  renderTable();
+  renderPartsTable();
 }
 
 /* ══════════════════════════════════════════
@@ -1401,18 +1530,22 @@ document.addEventListener('keydown',function(e){
 /* ══════════════════════════════════════════
    INIT
 ══════════════════════════════════════════ */
-function initApp(){
+async function initApp(){
   updateNavUser();
-  // Hide settings nav tab for non-admins
   const settingsTab=document.querySelectorAll('.nav-tab')[3];
   if(settingsTab)settingsTab.style.display=isAdmin()?'':'none';
+  await loadUsers();
+  await Promise.all([loadTicketsFromServer(),loadPartsFromServer(),loadAgentsFromServer()]);
   renderDash();
+  if(currentPage==='tickets')renderTable();
+  if(currentPage==='parts')renderPartsTable();
+  if(currentPage==='settings')renderSettings();
 }
 
-window.addEventListener('load',()=>{
+window.addEventListener('load',async ()=>{
   if(currentSession()){
     document.getElementById('login-screen').classList.remove('show');
-    initApp();
+    await initApp();
   } else {
     document.getElementById('login-screen').classList.add('show');
     setTimeout(()=>document.getElementById('login-username').focus(),80);
