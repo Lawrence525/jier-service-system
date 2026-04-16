@@ -443,10 +443,9 @@ tr:hover td{background:#f8fafc}
     <h3>Engineers / Handlers</h3>
     <p>These names appear in both Service Ticket and Parts Request assignment dropdowns.</p>
     <div class="agent-list" id="agent-list"></div>
-    <div class="add-row" style="display:grid;grid-template-columns:1.1fr 1fr 1.2fr auto;gap:8px;align-items:center">
+    <div class="add-row">
       <input type="text" id="new-agent-name" placeholder="Engineer name" onkeydown="if(event.key==='Enter')addAgent()">
-      <input type="text" id="new-agent-role" placeholder="Role" onkeydown="if(event.key==='Enter')addAgent()">
-      <input type="email" id="new-agent-email" placeholder="Email address" onkeydown="if(event.key==='Enter')addAgent()">
+      <input type="text" id="new-agent-role" placeholder="Role (optional)" onkeydown="if(event.key==='Enter')addAgent()" style="max-width:160px">
       <button class="btn success" onclick="addAgent()">+ Add</button>
     </div>
   </div>
@@ -497,7 +496,7 @@ tr:hover td{background:#f8fafc}
             <option>Material Shipped</option><option>Support On Site</option><option>Completed</option>
           </select>
         </div>
-        <div class="field"><label>Assigned Engineer(s)</label><select id="f-assigned" multiple size="6"></select><div style="font-size:11px;color:#64748b;margin-top:4px">Hold Ctrl or Command to select multiple engineers.</div></div>
+        <div class="field"><label>Assigned Engineer</label><select id="f-assigned"></select></div>
         <div class="field"><label>Invoice Status</label>
           <select id="f-invoice">
             <option value="">— None —</option>
@@ -552,7 +551,7 @@ tr:hover td{background:#f8fafc}
             <option>Standard</option><option>Urgent</option><option>Critical</option>
           </select>
         </div>
-        <div class="field"><label>Assigned Handler(s)</label><select id="p-assigned" multiple size="6"></select><div style="font-size:11px;color:#64748b;margin-top:4px">Hold Ctrl or Command to select multiple handlers.</div></div>
+        <div class="field"><label>Assigned Handler</label><select id="p-assigned"></select></div>
       </div>
       <div class="shdr teal-shdr">Status &amp; Pricing</div>
       <div class="fg">
@@ -605,13 +604,6 @@ tr:hover td{background:#f8fafc}
 const USERS_KEY='svc_users';
 const SESSION_KEY='svc_session';
 const API_BASE='';
-const DEFAULT_AGENT_SEED=[
-  {id:1,name:'Bin Liu',role:'Controls Engineer',email:'liu_bin1@jiermt.com'},
-  {id:2,name:'Lawrence Sun',role:'Controls Engineer',email:'sun_xiaoming@jier-na.com'},
-  {id:3,name:'Matthew Novak',role:'Service Manager',email:'novak_matthew@jier-na.com'},
-  {id:4,name:'Wenpin Wang',role:'Controls Engineer',email:'wang_wenpin@jiermt.com'},
-  {id:5,name:'Zhiwei Du',role:'Controls Engineer',email:'du_zhiwei@jiermt.com'}
-];
 
 let usersCache=[];
 
@@ -846,103 +838,50 @@ const AVATAR_TEXT=['#1e40af','#14532d','#713f12','#991b1b','#4c1d95','#7c2d12','
 function safeParse(v){try{return JSON.parse(v||'[]');}catch(e){return[];}}
 function firstValidArray(keys){for(const k of keys){const a=safeParse(localStorage.getItem(k));if(Array.isArray(a)&&a.length)return a;}return[];}
 
-function normalizeMultiAssigned(item){
-  const names=Array.isArray(item.assignedNames)?item.assignedNames.filter(Boolean).map(v=>String(v).trim()).filter(Boolean):[];
-  const ids=Array.isArray(item.assignedIds)?item.assignedIds.filter(v=>v!==null&&v!==undefined).map(v=>String(v).trim()).filter(Boolean):[];
-  if(!names.length&&item.assigned&&item.assigned!=='Unassigned') names.push(String(item.assigned).trim());
-  return {
-    assignedNames:[...new Set(names)],
-    assignedIds:[...new Set(ids)]
-  };
-}
-function assignedLabelFromNames(names){
-  return names&&names.length?names.join(', '):'Unassigned';
-}
 function normalizeTickets(list){
   if(!Array.isArray(list))return[];
-  return list.map((t,idx)=>{
-    const assignedInfo=normalizeMultiAssigned(t);
-    return {
-      id:t.id||('T'+String(idx+1).padStart(3,'0')),jobnum:t.jobnum||'',date:t.date||'',
-      company:t.company||'',plant:t.plant||'',contact:t.contact||'',email:t.email||'',phone:t.phone||'',
-      product:t.product||'',model:t.model||'',issue:t.issue||'',
-      followup:Array.isArray(t.followup)?t.followup:[],
-      status:t.status||'Unassigned',assigned:assignedLabelFromNames(assignedInfo.assignedNames),
-      assignedNames:assignedInfo.assignedNames,assignedIds:assignedInfo.assignedIds,
-      invoice:t.invoice||'',completed:t.completed||'',resolution:t.resolution||''
-    };
-  });
+  return list.map((t,idx)=>({
+    id:t.id||('T'+String(idx+1).padStart(3,'0')),jobnum:t.jobnum||'',date:t.date||'',
+    company:t.company||'',plant:t.plant||'',contact:t.contact||'',email:t.email||'',phone:t.phone||'',
+    product:t.product||'',model:t.model||'',issue:t.issue||'',
+    followup:Array.isArray(t.followup)?t.followup:[],
+    status:t.status||'Unassigned',assigned:t.assigned||'Unassigned',
+    invoice:t.invoice||'',completed:t.completed||'',resolution:t.resolution||''
+  }));
 }
 function normalizeParts(list){
   if(!Array.isArray(list))return[];
-  return list.map((p,idx)=>{
-    const assignedInfo=normalizeMultiAssigned(p);
-    return {
-      id:p.id||('P'+String(idx+1).padStart(3,'0')),date:p.date||'',
-      company:p.company||'',plant:p.plant||'',contact:p.contact||'',email:p.email||'',phone:p.phone||'',
-      equipment:p.equipment||'',partnum:p.partnum||'',qty:p.qty||'',
-      partdesc:p.partdesc||'',notes:p.notes||'',urgency:p.urgency||'Standard',
-      assigned:assignedLabelFromNames(assignedInfo.assignedNames),assignedNames:assignedInfo.assignedNames,assignedIds:assignedInfo.assignedIds,status:p.status||'Requested',
-      quotedprice:p.quotedprice||'',ponum:p.ponum||'',tracking:p.tracking||'',
-      shipdate:p.shipdate||'',deliverydate:p.deliverydate||''
-    };
-  });
+  return list.map((p,idx)=>({
+    id:p.id||('P'+String(idx+1).padStart(3,'0')),date:p.date||'',
+    company:p.company||'',plant:p.plant||'',contact:p.contact||'',email:p.email||'',phone:p.phone||'',
+    equipment:p.equipment||'',partnum:p.partnum||'',qty:p.qty||'',
+    partdesc:p.partdesc||'',notes:p.notes||'',urgency:p.urgency||'Standard',
+    assigned:p.assigned||'Unassigned',status:p.status||'Requested',
+    quotedprice:p.quotedprice||'',ponum:p.ponum||'',tracking:p.tracking||'',
+    shipdate:p.shipdate||'',deliverydate:p.deliverydate||''
+  }));
 }
 function normalizeEngineers(list){
   if(!Array.isArray(list))return[];
-  return list.map((a,idx)=>({
-    id:a.id!=null?Number(a.id):idx+1,
-    name:(a.name||'').trim(),
-    role:(a.role||'Controls Engineer').trim(),
-    email:(a.email||'').trim()
-  })).filter(a=>a.name);
+  return list.map(a=>({name:(a.name||'').trim(),role:(a.role||'Engineer').trim()})).filter(a=>a.name);
 }
 
 let tickets=getLocalTickets();
 let parts=getLocalParts();
-let agents=ensureSeedAgents(getLocalAgents());
+let agents=getLocalAgents();
 let editIdx=null,editPartsIdx=null;
 let currentPage='dashboard';
 let activeDashTab='svc';
 
 if(!agents.length){
-  agents=ensureSeedAgents([]);
+  agents=[{name:'Unassigned',role:''}];
 }
 
 async function save(){await persistTickets();}
 async function saveParts(){await persistParts();}
-async function saveAgents(){agents=normalizeEngineers(agents);await persistAgents();}
+async function saveAgents(){await persistAgents();}
 function nextSvcId(){const nums=tickets.map(t=>parseInt((t.id||'T000').replace(/\D/g,''))||0);return 'T'+String((nums.length?Math.max(...nums):0)+1).padStart(3,'0');}
 function nextPartsId(){const nums=parts.map(p=>parseInt((p.id||'P000').replace(/\D/g,''))||0);return 'P'+String((nums.length?Math.max(...nums):0)+1).padStart(3,'0');}
-function ensureSeedAgents(list){
-  const merged=[...list];
-  DEFAULT_AGENT_SEED.forEach(seed=>{
-    if(!merged.some(a=>a.name.toLowerCase()===seed.name.toLowerCase())) merged.push(seed);
-  });
-  return normalizeEngineers(merged);
-}
-function getAssignedNames(item){
-  return Array.isArray(item.assignedNames)&&item.assignedNames.length?item.assignedNames:[item.assigned].filter(v=>v&&v!=='Unassigned');
-}
-function isAssignedToCurrent(item){
-  const s=currentSession();
-  if(!s||s.role==='admin') return true;
-  return getAssignedNames(item).some(name=>name.toLowerCase()===s.username.toLowerCase());
-}
-function setMultiSelectValues(id,values){
-  const set=new Set((values||[]).map(v=>String(v)));
-  Array.from(document.getElementById(id).options).forEach(opt=>{opt.selected=set.has(opt.value);});
-}
-function getSelectedAgents(id){
-  const selected=Array.from(document.getElementById(id).selectedOptions).map(o=>o.value).filter(v=>v&&v!=='Unassigned');
-  const selectedAgents=agents.filter(a=>selected.includes(a.name));
-  return {
-    names:selectedAgents.map(a=>a.name),
-    ids:selectedAgents.map(a=>a.id),
-    emails:selectedAgents.map(a=>a.email).filter(Boolean),
-    label:selectedAgents.length?selectedAgents.map(a=>a.name).join(', '):'Unassigned'
-  };
-}
 
 /* ══════════════════════════════════════════
    UTILITIES
@@ -966,12 +905,12 @@ function sortBy(key,module){
 function visibleTickets(){
   const s=currentSession();
   if(!s||s.role==='admin') return tickets;
-  return tickets.filter(isAssignedToCurrent);
+  return tickets.filter(t=>(t.assigned||'').toLowerCase()===s.username.toLowerCase());
 }
 function visibleParts(){
   const s=currentSession();
   if(!s||s.role==='admin') return parts;
-  return parts.filter(isAssignedToCurrent);
+  return parts.filter(p=>(p.assigned||'').toLowerCase()===s.username.toLowerCase());
 }
 
 /* ══════════════════════════════════════════
@@ -1060,7 +999,7 @@ function renderSvcDash(){
           <div class="section-label-svc">Quick Summary</div>
           <div class="summary-grid">
             <div class="summary-mini"><div class="label">Last Completed</div><div class="value" style="font-size:18px">${lastDone[0]?lastDone[0].completed:'—'}</div></div>
-            <div class="summary-mini"><div class="label">Active Engineers</div><div class="value">${new Set(data.flatMap(t=>t.assignedNames||[]).filter(n=>n&&n!=='Unassigned')).size}</div></div>
+            <div class="summary-mini"><div class="label">Active Engineers</div><div class="value">${new Set(data.map(t=>(t.assigned||'').trim()).filter(n=>n&&n!=='Unassigned')).size}</div></div>
           </div>
         </div>
         <div class="simple-card">
@@ -1075,7 +1014,7 @@ function renderSvcDash(){
 
   // Engineer workload
   const engCounts={};
-  data.filter(t=>t.status!=='Completed').forEach(t=>{(t.assignedNames||[]).forEach(n=>{engCounts[n]=(engCounts[n]||0)+1;});});
+  data.filter(t=>(t.assigned||'').trim()&&t.assigned!=='Unassigned'&&t.status!=='Completed').forEach(t=>{const n=(t.assigned||'').trim();engCounts[n]=(engCounts[n]||0)+1;});
   const seenEng=new Set();
   const roster=[];
   agents.forEach(a=>{if(a.name&&a.name!=='Unassigned'){seenEng.add(a.name);roster.push({name:a.name,role:a.role,count:engCounts[a.name]||0});}});
@@ -1203,7 +1142,7 @@ function filteredTickets(){
     if(q&&!['company','contact','id','jobnum','plant','issue','model'].some(k=>(t[k]||'').toLowerCase().includes(q)))return false;
     if(st&&t.status!==st)return false;
     if(pr&&t.product!==pr)return false;
-    if(ag&&!(t.assignedNames||[]).includes(ag)&&t.assigned!==ag)return false;
+    if(ag&&t.assigned!==ag)return false;
     return true;
   });
   return result.slice().sort((a,b)=>{
@@ -1264,7 +1203,7 @@ function openForm(idx){
   document.getElementById('f-invoice').value=t?t.invoice||'':'';
   document.getElementById('f-completed').value=t?t.completed||'':'';
   document.getElementById('f-resolution').value=t?t.resolution||'':'';
-  syncAgentDropdown('f-assigned',t?(t.assignedNames||[]):[]);
+  syncAgentDropdown('f-assigned',t?t.assigned||'Unassigned':'Unassigned');
   buildFuGrid(t&&t.followup?t.followup:[]);
   updateCompanyLogoPreview();
   document.getElementById('overlay').classList.add('show');
@@ -1275,7 +1214,6 @@ async function saveTicket(){
   const company=document.getElementById('f-company').value.trim();
   if(!company){alert('Company name is required.');return;}
   const fu=Array.from(document.querySelectorAll('#fu-grid input:checked')).map(i=>i.value);
-  const assignedInfo=getSelectedAgents('f-assigned');
   const t={
     id:editIdx!==null?tickets[editIdx].id:document.getElementById('f-id').value,
     jobnum:document.getElementById('f-jobnum').value.trim(),
@@ -1288,7 +1226,7 @@ async function saveTicket(){
     model:document.getElementById('f-model').value.trim(),
     issue:document.getElementById('f-issue').value.trim(),followup:fu,
     status:document.getElementById('f-status-form').value,
-    assigned:assignedInfo.label,assignedNames:assignedInfo.names,assignedIds:assignedInfo.ids,
+    assigned:document.getElementById('f-assigned').value,
     invoice:document.getElementById('f-invoice').value,
     completed:document.getElementById('f-completed').value,
     resolution:document.getElementById('f-resolution').value.trim(),
@@ -1309,7 +1247,7 @@ function openDetail(i){
   const fu=t.followup&&t.followup.length?t.followup.map(f=>`<span class="futag">${escapeHtml(f)}</span>`).join(''):'<span style="color:#94a3b8;font-size:13px">None</span>';
   document.getElementById('dp-title').textContent=t.id;
   document.getElementById('dp-sub').textContent=[t.jobnum,t.plant].filter(Boolean).join(' · ');
-  const canEdit=isAdmin()||isAssignedToCurrent(t);
+  const canEdit=isAdmin()||(currentSession()&&(t.assigned||'').toLowerCase()===currentSession().username.toLowerCase());
   document.getElementById('dpbody').innerHTML=`
     <div class="dpsec"><h4>Identification</h4>
       <div class="drow"><span class="k">Ticket #</span><span class="v" style="color:#1F3864;font-weight:700">${escapeHtml(t.id)}</span></div>
@@ -1333,7 +1271,7 @@ function openDetail(i){
     <div class="dpsec"><h4>Follow-Up Required</h4><div style="margin-top:4px">${fu}</div></div>
     <div class="dpsec"><h4>Status &amp; Billing</h4>
       <div class="drow"><span class="k">Status</span><span class="v">${statusBadge(t.status)}</span></div>
-      <div class="drow"><span class="k">Assigned Engineer(s)</span><span class="v">${escapeHtml(t.assigned)||'—'}</span></div>
+      <div class="drow"><span class="k">Assigned Engineer</span><span class="v">${escapeHtml(t.assigned)||'—'}</span></div>
       <div class="drow"><span class="k">Invoice</span><span class="v">${invBadge(t.invoice)}</span></div>
     </div>
     <div class="dpsec"><h4>Resolution</h4>
@@ -1361,7 +1299,7 @@ function filteredParts(){
     if(q&&!['company','contact','id','partnum','partdesc','equipment','ponum','tracking','email','phone','plant'].some(k=>String(p[k]||'').toLowerCase().includes(q)))return false;
     if(st&&p.status!==st)return false;
     if(urg&&p.urgency!==urg)return false;
-    if(ag&&!(p.assignedNames||[]).includes(ag)&&p.assigned!==ag)return false;
+    if(ag&&p.assigned!==ag)return false;
     return true;
   });
   return result.slice().sort((a,b)=>{
@@ -1421,7 +1359,7 @@ function openPartsForm(idx){
   document.getElementById('p-tracking').value=p?p.tracking||'':'';
   document.getElementById('p-shipdate').value=p?p.shipdate||'':'';
   document.getElementById('p-deliverydate').value=p?p.deliverydate||'':'';
-  syncAgentDropdown('p-assigned',p?(p.assignedNames||[]):[]);
+  syncAgentDropdown('p-assigned',p?p.assigned||'Unassigned':'Unassigned');
   updatePartsLogoPreview();
   document.getElementById('p-overlay').classList.add('show');
   setTimeout(()=>document.getElementById('p-company').focus(),80);
@@ -1434,7 +1372,6 @@ async function savePartsRequest(){
   if(!company){alert('Company name is required.');return;}
   if(!partdesc){alert('Part description is required.');return;}
   if(!qty||parseInt(qty)<1){alert('Quantity must be at least 1.');return;}
-  const assignedInfo=getSelectedAgents('p-assigned');
   const p={
     id:editPartsIdx!==null?parts[editPartsIdx].id:document.getElementById('p-id').value,
     date:document.getElementById('p-date').value,company,
@@ -1447,7 +1384,7 @@ async function savePartsRequest(){
     qty:document.getElementById('p-qty').value,
     partdesc,notes:document.getElementById('p-notes').value.trim(),
     urgency:document.getElementById('p-urgency').value,
-    assigned:assignedInfo.label,assignedNames:assignedInfo.names,assignedIds:assignedInfo.ids,
+    assigned:document.getElementById('p-assigned').value,
     status:document.getElementById('p-status-form').value,
     quotedprice:document.getElementById('p-quotedprice').value,
     ponum:document.getElementById('p-ponum').value.trim(),
@@ -1471,7 +1408,7 @@ function openPartsDetail(i){
   const price=p.quotedprice?'$'+parseFloat(p.quotedprice).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}):'—';
   document.getElementById('p-dp-title').textContent=p.id;
   document.getElementById('p-dp-sub').textContent=[p.equipment,p.company].filter(Boolean).join(' · ');
-  const canEdit=isAdmin()||isAssignedToCurrent(p);
+  const canEdit=isAdmin()||(currentSession()&&(p.assigned||'').toLowerCase()===currentSession().username.toLowerCase());
   document.getElementById('p-dpbody').innerHTML=`
     <div class="dpsec"><h4 class="teal-h4">Request Info</h4>
       <div class="drow"><span class="k">Request #</span><span class="v" style="color:#0f766e;font-weight:700">${escapeHtml(p.id)}</span></div>
@@ -1494,7 +1431,7 @@ function openPartsDetail(i){
     </div>
     <div class="dpsec"><h4 class="teal-h4">Status &amp; Fulfillment</h4>
       <div class="drow"><span class="k">Status</span><span class="v">${partsBadge(p.status)}</span></div>
-      <div class="drow"><span class="k">Handler(s)</span><span class="v">${escapeHtml(p.assigned)||'—'}</span></div>
+      <div class="drow"><span class="k">Handler</span><span class="v">${escapeHtml(p.assigned)||'—'}</span></div>
       <div class="drow"><span class="k">Quoted Price</span><span class="v" style="font-weight:700;color:#0f766e">${price}</span></div>
       <div class="drow"><span class="k">PO Number</span><span class="v">${escapeHtml(p.ponum)||'—'}</span></div>
       <div class="drow"><span class="k">Tracking #</span><span class="v">${escapeHtml(p.tracking)||'—'}</span></div>
@@ -1516,24 +1453,20 @@ function closePartsDetail(){document.getElementById('p-dpover').classList.remove
 function renderSettings(){
   renderUsers();
   document.getElementById('agent-list').innerHTML=agents.map((a,i)=>`
-    <div class="agent-row" style="display:grid;grid-template-columns:1.2fr .9fr 1.2fr auto;gap:8px">
+    <div class="agent-row">
       <div class="aname">${escapeHtml(a.name)}</div>
       <div class="arole">${escapeHtml(a.role||'')}</div>
-      <div class="arole">${escapeHtml(a.email||'')}</div>
-      <button class="btn sm danger" onclick="removeAgent(${i})">Remove</button>
+      ${a.name!=='Unassigned'?`<button class="btn sm danger" onclick="removeAgent(${i})">Remove</button>`:'<span style="font-size:11px;color:#94a3b8">default</span>'}
     </div>`).join('');
 }
 async function addAgent(){
   const name=document.getElementById('new-agent-name').value.trim();
   if(!name){alert('Please enter a name.');return;}
   if(agents.find(a=>a.name.toLowerCase()===name.toLowerCase())){alert('Engineer already exists.');return;}
-  const role=document.getElementById('new-agent-role').value.trim()||'Controls Engineer';
-  const email=document.getElementById('new-agent-email').value.trim();
-  if(!email){alert('Please enter an email address.');return;}
-  agents.push({id:(agents.reduce((m,a)=>Math.max(m,Number(a.id)||0),0)+1),name,role,email});
-  agents=normalizeEngineers(agents);
+  const role=document.getElementById('new-agent-role').value.trim();
+  agents.push({name,role});
   await saveAgents();
-  document.getElementById('new-agent-name').value='';document.getElementById('new-agent-role').value='';document.getElementById('new-agent-email').value='';
+  document.getElementById('new-agent-name').value='';document.getElementById('new-agent-role').value='';
   renderSettings();
   renderDash();
   renderTable();
@@ -1542,7 +1475,6 @@ async function addAgent(){
 async function removeAgent(i){
   if(!confirm(`Remove "${agents[i].name}"?`))return;
   agents.splice(i,1);
-  agents=normalizeEngineers(agents);
   await saveAgents();
   renderSettings();
   renderDash();
@@ -1557,15 +1489,15 @@ function exportActiveCSV(){
   if(currentPage==='parts'){
     const data=filteredParts();
     if(!data.length){alert('No parts requests to export.');return;}
-    const hdr=['Request #','Date','Company','Plant','Contact','Email','Phone','Equipment','Part Number','Qty','Description','Notes','Urgency','Handlers','Handler IDs','Status','Quoted Price','PO Number','Tracking','Ship Date','Delivery Date'];
-    const rows=data.map(p=>[p.id,p.date,p.company,p.plant,p.contact,p.email,p.phone,p.equipment,p.partnum,p.qty,p.partdesc,p.notes,p.urgency,p.assigned,(p.assignedIds||[]).join('; '),p.status,p.quotedprice,p.ponum,p.tracking,p.shipdate,p.deliverydate].map(v=>`"${(v||'').toString().replace(/"/g,'""')}"`));
+    const hdr=['Request #','Date','Company','Plant','Contact','Email','Phone','Equipment','Part Number','Qty','Description','Notes','Urgency','Handler','Status','Quoted Price','PO Number','Tracking','Ship Date','Delivery Date'];
+    const rows=data.map(p=>[p.id,p.date,p.company,p.plant,p.contact,p.email,p.phone,p.equipment,p.partnum,p.qty,p.partdesc,p.notes,p.urgency,p.assigned,p.status,p.quotedprice,p.ponum,p.tracking,p.shipdate,p.deliverydate].map(v=>`"${(v||'').toString().replace(/"/g,'""')}"`));
     const csv=[hdr,...rows].map(r=>r.join(',')).join('\n');
     const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv);a.download='parts_requests.csv';a.click();
   } else {
     const data=filteredTickets();
     if(!data.length){alert('No tickets to export.');return;}
-    const hdr=['Ticket #','Jier Job #','Date','Company','Plant Location','Contact','Email','Phone','Product','Model','Issue','Follow-up','Status','Assigned Engineers','Engineer IDs','Invoice Status','Completed','Resolution'];
-    const rows=data.map(t=>[t.id,t.jobnum,t.date,t.company,t.plant,t.contact,t.email,t.phone,t.product,t.model,t.issue,(t.followup||[]).join('; '),t.status,t.assigned,(t.assignedIds||[]).join('; '),t.invoice,t.completed,t.resolution].map(v=>`"${(v||'').replace(/"/g,'""')}"`));
+    const hdr=['Ticket #','Jier Job #','Date','Company','Plant Location','Contact','Email','Phone','Product','Model','Issue','Follow-up','Status','Assigned Engineer','Invoice Status','Completed','Resolution'];
+    const rows=data.map(t=>[t.id,t.jobnum,t.date,t.company,t.plant,t.contact,t.email,t.phone,t.product,t.model,t.issue,(t.followup||[]).join('; '),t.status,t.assigned,t.invoice,t.completed,t.resolution].map(v=>`"${(v||'').replace(/"/g,'""')}"`));
     const csv=[hdr,...rows].map(r=>r.join(',')).join('\n');
     const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv);a.download='service_tickets.csv';a.click();
   }
